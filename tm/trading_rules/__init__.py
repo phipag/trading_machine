@@ -1,0 +1,1 @@
+from tm.trading_rules.SimpleMovingAverage import SimpleMovingAverage
