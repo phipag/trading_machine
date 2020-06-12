@@ -29,7 +29,7 @@ class SimpleMovingAverage(TradingRule):
         buy_decisions = (self._history['Close'].shift(1) < sma) & (self._history['Close'] >= sma)
         return pd.Series(data=buy_decisions, index=self._history.index)
 
-    def sell_signals(self):
+    def sell_signals(self) -> pd.Series:
         """
         Construct a Series containing True if the stock should be sold and false else
         :return: Series containing sell or not sell indicators
