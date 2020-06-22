@@ -14,6 +14,10 @@ class TradingRule(ABC):
         self._history = stock_data_provider.history
 
     @property
+    def history(self):
+        return self._history
+
+    @property
     @abstractmethod
     def num_bits(self):
         """
