@@ -1,2 +1,3 @@
-from tm.trading_rules.SimpleMovingAverage import SimpleMovingAverage
 from tm.trading_rules.ExponentialMovingAverage import ExponentialMovingAverage
+from tm.trading_rules.SimpleMovingAverage import SimpleMovingAverage
+from tm.trading_rules.TradingRule import TradingRule
