@@ -5,6 +5,7 @@ from tm.trading_rules.TradingRule import TradingRule
 
 
 class ExponentialMovingAverage(TradingRule):
+    num_params = 1
     __days: int
 
     def __init__(self, stock_data_provider: StockDataProvider, days: int = 200):

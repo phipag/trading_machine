@@ -11,6 +11,11 @@ class TradingRule(ABC):
     def __init__(self, stock_data_provider: StockDataProvider):
         self._history = stock_data_provider.history
 
+    @property
+    @abstractmethod
+    def num_params(self):
+        return self.num_params
+
     @abstractmethod
     def calculate(self):
         pass
