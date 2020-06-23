@@ -1,5 +1,6 @@
 from typing import List
 
+from tm import StockDataProvider
 from tm.trading_rules import TradingRule
 
 
@@ -19,3 +20,9 @@ def map_chromosome_to_trading_rule_parameters(chromosome: List[int], trading_rul
             current_index += bits + 1
         parameters.append(rule_parameters)
     return parameters
+
+
+def calculate_absolute_buy_and_hold_returns(stock_data_provider: StockDataProvider) -> float:
+    first_price = stock_data_provider.history['Close'].iloc[0]
+    last_price = stock_data_provider.history['Close'].iloc[-1]
+    return last_price - first_price

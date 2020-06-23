@@ -7,7 +7,7 @@ import pandas as pd
 from tm.trading_rules import TradingRule
 
 
-class PerformanceEvaluator:
+class StrategyPerformanceEvaluator:
     """
     A class which should calculate different performance metrics given a list of trading rule instances with initialized parameters.
     Please note that the trading rules hold the stock data as pandas Series in the property "TradingRule.history"

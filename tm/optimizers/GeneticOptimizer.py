@@ -5,7 +5,7 @@ import numpy as np
 from deap import base, tools, creator
 
 from tm import StockDataProvider
-from tm.optimizers.PerformanceEvaluator import PerformanceEvaluator
+from tm.optimizers.StrategyPerformanceEvaluator import StrategyPerformanceEvaluator
 from tm.optimizers.utils import map_chromosome_to_trading_rule_parameters
 from tm.trading_rules import TradingRule
 
@@ -48,7 +48,7 @@ class GeneticOptimizer:
     def __evaluateFitness(self, individual) -> Tuple[Union[int, Any]]:
         rules = list(map(lambda Rule, params: Rule(self.__stock_data_provider, *params), self.__trading_rules, map_chromosome_to_trading_rule_parameters(individual, self.__trading_rules)))
         # TODO: Ignore inactive rules
-        evaluator = PerformanceEvaluator(rules)
+        evaluator = StrategyPerformanceEvaluator(rules)
         return evaluator.calculate_net_profit(),
 
     def __calculate_chromosome_length(self) -> int:
