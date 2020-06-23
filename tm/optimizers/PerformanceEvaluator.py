@@ -32,6 +32,7 @@ class PerformanceEvaluator:
         self.__closing_prices = trading_rules[0].history['Close']
 
         # Calculate buy signals and sell signals
+        # TODO: This is a performance bottle-neck
         self.__buy_signals = pd.Series(data=True, index=self.__closing_prices.index)
         self.__sell_signals = pd.Series(data=True, index=self.__closing_prices.index)
         for rule in self.__trading_rules:
@@ -57,8 +58,12 @@ class PerformanceEvaluator:
         # If the first signal is a sell signal, remove it, because nothing can be sold before something has been bought
         first_sell_signal_date = self.__sell_signals[self.__sell_signals == True].index[0]
         first_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[0]
-        if first_sell_signal_date < first_buy_signal_date:
+        if first_sell_signal_date <= first_buy_signal_date:
             self.__sell_signals[first_sell_signal_date] = False
 
         # Now we are ready to calculate profit: There is at least one buy and one sell signal, the first signal is always a buy signal and the last signal is always a sell signal
-        # TODO: No we are not yet :-D The number of sell signals does not match the number of buy signals -.-
+        # Attention: There might still be a mismatch between the number of sell signals and the number of buy signals
+        buy_sell_signals = pd.concat([self.__buy_signals[self.__buy_signals == True], self.__sell_signals[self.__sell_signals == True]], axis=1)
+        buy_sell_signals = buy_sell_signals.loc[(buy_sell_signals[0].shift(1) != buy_sell_signals[0]) & (buy_sell_signals[1].shift(1) != buy_sell_signals[1])]
+        # sum of selling prices - sum of buying prices
+        return self.__closing_prices.loc[buy_sell_signals[buy_sell_signals[1] == True].index].sum() - self.__closing_prices.loc[buy_sell_signals[buy_sell_signals[0] == True].index].sum()

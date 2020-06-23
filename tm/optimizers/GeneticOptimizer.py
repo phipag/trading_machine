@@ -45,13 +45,11 @@ class GeneticOptimizer:
         self.__toolbox.register('mutate', tools.mutFlipBit, indpb=0.05)
         self.__toolbox.register('select', tools.selTournament, tournsize=3)
 
-    # TODO: Replace dummy evaluation by real net profit calculation
     def __evaluateFitness(self, individual) -> Tuple[Union[int, Any]]:
         rules = list(map(lambda Rule, params: Rule(self.__stock_data_provider, *params), self.__trading_rules, map_chromosome_to_trading_rule_parameters(individual, self.__trading_rules)))
         # TODO: Ignore inactive rules
         evaluator = PerformanceEvaluator(rules)
-        evaluator.calculate_net_profit()
-        return sum(individual),
+        return evaluator.calculate_net_profit(),
 
     def __calculate_chromosome_length(self) -> int:
         """
@@ -65,7 +63,7 @@ class GeneticOptimizer:
         return total_length
 
     def run(self):
-        population = self.__toolbox.population(n=500)
+        population = self.__toolbox.population(n=300)
         # Evaluate the entire population
         fitnesses = list(map(self.__toolbox.evaluate, population))
         for individual, fitness in zip(population, fitnesses):
@@ -81,7 +79,7 @@ class GeneticOptimizer:
         # Begin the evolution
         # Variable keeping track of the number of generations
         g = 0
-        while max(fitnesses) < self.__individual_size and g < 1000:
+        while g < 5:
             # A new generation
             g = g + 1
             print("-- Generation %i --" % g)
