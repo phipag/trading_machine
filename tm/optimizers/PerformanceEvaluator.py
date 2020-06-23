@@ -1,3 +1,5 @@
+import operator
+from functools import reduce
 from typing import List
 
 import pandas as pd
@@ -31,15 +33,12 @@ class PerformanceEvaluator:
         # Possible because all rules hold the same market data at this point
         self.__closing_prices = trading_rules[0].history['Close']
 
-        # Calculate buy signals and sell signals
-        # TODO: This is a performance bottle-neck
-        self.__buy_signals = pd.Series(data=True, index=self.__closing_prices.index)
-        self.__sell_signals = pd.Series(data=True, index=self.__closing_prices.index)
-        for rule in self.__trading_rules:
-            # TODO: Improve this rule ("Buy and sell only if all rules say it")
-            self.__buy_signals &= rule.buy_signals()
-            self.__sell_signals &= rule.sell_signals()
+        # TODO: Improve this rule ("Buy and sell only if all rules say it")
+        # reduce is faster than manual iteration
+        self.__buy_signals = pd.Series(data=reduce(operator.and_, map(lambda rule: rule.buy_signals(), self.__trading_rules)), index=self.__closing_prices.index)
+        self.__sell_signals = pd.Series(data=reduce(operator.and_, map(lambda rule: rule.sell_signals(), self.__trading_rules)), index=self.__closing_prices.index)
 
+    # TODO: Evaluate performance
     def calculate_net_profit(self) -> float:
         # If nothing is bought, profit is 0
         if len(self.__buy_signals[self.__buy_signals == True]) == 0:
@@ -64,6 +63,7 @@ class PerformanceEvaluator:
         # Now we are ready to calculate profit: There is at least one buy and one sell signal, the first signal is always a buy signal and the last signal is always a sell signal
         # Attention: There might still be a mismatch between the number of sell signals and the number of buy signals
         buy_sell_signals = pd.concat([self.__buy_signals[self.__buy_signals == True], self.__sell_signals[self.__sell_signals == True]], axis=1)
-        buy_sell_signals = buy_sell_signals.loc[(buy_sell_signals[0].shift(1) != buy_sell_signals[0]) & (buy_sell_signals[1].shift(1) != buy_sell_signals[1])]
+        buy_sell_signals.columns = ['buy', 'sell']
+        buy_sell_signals = buy_sell_signals.loc[(buy_sell_signals['buy'].shift(1) != buy_sell_signals['buy']) & (buy_sell_signals['sell'].shift(1) != buy_sell_signals['sell'])]
         # sum of selling prices - sum of buying prices
-        return self.__closing_prices.loc[buy_sell_signals[buy_sell_signals[1] == True].index].sum() - self.__closing_prices.loc[buy_sell_signals[buy_sell_signals[0] == True].index].sum()
+        return self.__closing_prices.loc[buy_sell_signals[buy_sell_signals['sell'] == True].index].sum() - self.__closing_prices.loc[buy_sell_signals[buy_sell_signals['buy'] == True].index].sum()
