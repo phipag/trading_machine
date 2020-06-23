@@ -73,9 +73,6 @@ class GeneticOptimizer:
         # MUTPB is the probability for mutating an individual.
         CXPB, MUTPB = 0.5, 0.2
 
-        # Extracting all the fitnesses
-        fitnesses = [individual.fitness.values[0] for individual in population]
-
         # Begin the evolution
         # Variable keeping track of the number of generations
         g = 0
