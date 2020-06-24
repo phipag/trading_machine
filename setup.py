@@ -7,5 +7,5 @@ setup(
     author='Philipp Page, Jonathan Feldges, Nico Hakenes',
     author_email='ppagejem@smail.uni-koeln.de',
     packages=find_packages('*'),
-    install_requires=['pandas', 'yfinance', 'deap', 'numpy'],
+    install_requires=['pandas', 'yfinance', 'deap', 'numpy', 'ta'],
 )
