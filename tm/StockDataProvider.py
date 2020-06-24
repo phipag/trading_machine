@@ -8,13 +8,13 @@ class StockDataProvider:
     __dividends: pd.Series
     __splits: pd.Series
 
-    def __init__(self, ticker_name: str):
+    def __init__(self, ticker_name: str, period='max', start=None, end=None):
         if not ticker_name:
             raise ValueError('Please provider a ticker name.')
 
         ticker: yf.Ticker = yf.Ticker(ticker_name)
         try:
-            self.__history = ticker.history(period='max')
+            self.__history = ticker.history(period=period, start=start, end=end)
             self.__actions = ticker.actions
             self.__dividends = ticker.dividends
             self.__splits = ticker.splits
