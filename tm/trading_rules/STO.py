@@ -1,26 +1,31 @@
 import pandas as pd
-from ta import momentum
+import numpy as np
+
+from typing import List
 from tm import StockDataProvider
 from tm.trading_rules.TradingRule import TradingRule
 
 
 class STO(TradingRule):
+    num_bits: List[int] = [8]
     __days: int
 
     def __init__(self, stock_data_provider: StockDataProvider, days: int = 14):
         super().__init__(stock_data_provider)
         self.__days = days
-        self._history['Lowest'] = self._history['Close']
-        self._history['Highest'] =  self._history['Close']
-        lowest =  self._history['Close'].iloc[0]
-        highest =  self._history['Close'].iloc[0]
-        for index, row in  self._history.iterrows():
-            if row['Close'] < lowest:
-                lowest = row['Close']
-            if row['Close'] > highest:
-                highest = row['Close']
-            self._history['Lowest'].loc[index] = lowest
-            self._history['Highest'].loc[index] = highest
+        lowestArray = np.empty(self._history['Close'].size)
+        highestArray = np.empty(self._history['Close'].size)
+        lowestValue = self._history['Close'].iloc[0]
+        highestValue = self._history['Close'].iloc[0]
+        for i in range(0, self._history['Close'].size):
+            if self._history['Close'].iloc[i] < lowestValue:
+                lowestValue = self._history['Close'].iloc[i]
+            if self._history['Close'].iloc[i] > highestValue:
+                highestValue = self._history['Close'].iloc[i]
+            lowestArray[i] = lowestValue
+            highestArray[i] = highestValue
+        self._history['Lowest'] = lowestArray
+        self._history['Highest'] = highestArray
 
     def calculate(self) -> pd.Series:
         """
