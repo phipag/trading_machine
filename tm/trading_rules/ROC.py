@@ -1,3 +1,4 @@
+from typing import List
 import pandas as pd
 from ta import momentum
 from tm import StockDataProvider
@@ -5,6 +6,8 @@ from tm.trading_rules.TradingRule import TradingRule
 
 
 class ROC(TradingRule):
+    # The days parameters needs 8 bits (= all integers in [0, 255])
+    num_bits: List[int] = [8]
     __days: int
 
     def __init__(self, stock_data_provider: StockDataProvider, days: int = 12):

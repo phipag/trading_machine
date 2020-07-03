@@ -1,3 +1,4 @@
+from typing import List
 import pandas as pd
 from ta import momentum
 from tm import StockDataProvider
@@ -5,11 +6,17 @@ from tm.trading_rules.TradingRule import TradingRule
 
 
 class RSI(TradingRule):
+    # The days parameters needs 8 bits (= all integers in [0, 255]),
+    # the buyIndicator and sellIndicator each 7 bits [0,128]
+    num_bits: List[int] = [22]
     __days: int
+    __buyIndicator: int
+    __sellIndicator: int
 
-    def __init__(self, stock_data_provider: StockDataProvider, days: int = 200):
+    def __init__(self, stock_data_provider: StockDataProvider, days: int = 200, buyIndicator: int = 30, sellIndicator: int = 70):
         super().__init__(stock_data_provider)
-        self.__days = days
+        self.__buyIndicator = buyIndicator
+        self.__sellIndicator = sellIndicator
 
     def calculate(self) -> pd.Series:
         """
@@ -38,7 +45,7 @@ class RSI(TradingRule):
         # Buy if the rsi is smaller than 30
         rsi = self.calculate()
         # A boolean vector
-        buy_decisions = (rsi <= 30)
+        buy_decisions = (rsi <= self.__buyIndicator)
         return pd.Series(data=buy_decisions, index=self._history.index)
 
     def sell_signals(self) -> pd.Series:
@@ -49,5 +56,5 @@ class RSI(TradingRule):
         # Sell if the rsi is higher than 70
         rsi = self.calculate()
         # A boolean vector
-        sell_decisions = (rsi >= 70)
+        sell_decisions = (rsi >= self.__sellIndicator)
         return pd.Series(data=sell_decisions, index=self._history.index)
