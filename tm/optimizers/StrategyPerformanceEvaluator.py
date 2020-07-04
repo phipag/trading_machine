@@ -16,6 +16,7 @@ class StrategyPerformanceEvaluator:
     __buy_signals: pd.Series
     __sell_signals: pd.Series
     __closing_prices: pd.Series
+    TRANSACTION_COSTS: int = 0.0025
 
     def __init__(self, trading_rules: List[TradingRule]):
         # Trading Rules should not be empty
@@ -66,7 +67,7 @@ class StrategyPerformanceEvaluator:
         buy_sell_signals = buy_sell_signals.loc[(buy_sell_signals['buy'].shift(1) != buy_sell_signals['buy']) & (buy_sell_signals['sell'].shift(1) != buy_sell_signals['sell'])]
 
         # Simulate transaction costs
-        transaction_costs = self.__closing_prices.loc[buy_sell_signals[buy_sell_signals['buy'] == True].index].sum() * 0.025
+        transaction_costs = self.__closing_prices.loc[buy_sell_signals[buy_sell_signals['buy'] == True].index].sum() * self.TRANSACTION_COSTS
 
         # Calculate net profit
         net_profit = self.__closing_prices.loc[buy_sell_signals[buy_sell_signals['sell'] == True].index].sum() - self.__closing_prices.loc[
