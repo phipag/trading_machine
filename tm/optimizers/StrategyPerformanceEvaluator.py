@@ -22,7 +22,7 @@ class StrategyPerformanceEvaluator:
         if len(trading_rules) == 0:
             raise ValueError('Cannot calculate performance for an empty list of trading rules.')
 
-        # Validate that all trading rules hold the same market data
+        # Validate that all trading rules hold the same market data (if there is more than one rule)
         if len(trading_rules) > 1:
             base_history = trading_rules[0].history
             for rule in trading_rules[1:]:
@@ -34,11 +34,10 @@ class StrategyPerformanceEvaluator:
         self.__closing_prices = trading_rules[0].history['Close']
 
         # TODO: Improve this rule ("Buy and sell only if all rules say it")
-        # reduce is faster than manual iteration
+        # Note: reduce function over bitwise and is faster than manual iteration
         self.__buy_signals = pd.Series(data=reduce(operator.and_, map(lambda rule: rule.buy_signals(), self.__trading_rules)), index=self.__closing_prices.index)
         self.__sell_signals = pd.Series(data=reduce(operator.and_, map(lambda rule: rule.sell_signals(), self.__trading_rules)), index=self.__closing_prices.index)
 
-    # TODO: Evaluate performance
     def calculate_net_profit(self) -> float:
         # If nothing is bought, profit is 0
         if len(self.__buy_signals[self.__buy_signals == True]) == 0:
@@ -65,5 +64,13 @@ class StrategyPerformanceEvaluator:
         buy_sell_signals = pd.concat([self.__buy_signals[self.__buy_signals == True], self.__sell_signals[self.__sell_signals == True]], axis=1)
         buy_sell_signals.columns = ['buy', 'sell']
         buy_sell_signals = buy_sell_signals.loc[(buy_sell_signals['buy'].shift(1) != buy_sell_signals['buy']) & (buy_sell_signals['sell'].shift(1) != buy_sell_signals['sell'])]
-        # sum of selling prices - sum of buying prices
-        return self.__closing_prices.loc[buy_sell_signals[buy_sell_signals['sell'] == True].index].sum() - self.__closing_prices.loc[buy_sell_signals[buy_sell_signals['buy'] == True].index].sum()
+
+        # Simulate transaction costs
+        transaction_costs = self.__closing_prices.loc[buy_sell_signals[buy_sell_signals['buy'] == True].index].sum() * 0.025
+
+        # Calculate net profit
+        net_profit = self.__closing_prices.loc[buy_sell_signals[buy_sell_signals['sell'] == True].index].sum() - self.__closing_prices.loc[
+            buy_sell_signals[buy_sell_signals['buy'] == True].index].sum()
+
+        # Return net profit - transaction costs
+        return net_profit - transaction_costs
