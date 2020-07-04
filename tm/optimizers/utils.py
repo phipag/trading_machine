@@ -4,8 +4,21 @@ from tm import StockDataProvider
 from tm.trading_rules import TradingRule
 
 
-# TODO: Currently only supports integer values (what happens if a trading rules wants a float parameter?)
+def filter_for_active_rules(chromosome: List[int], trading_rules: List[TradingRule]) -> List[TradingRule]:
+    # Resulting list of active rules
+    active_rules = []
+    # The currently considered index in the chromosome
+    current_index = 0
+    for rule in trading_rules:
+        on_off_index = current_index + sum(rule.num_bits)
+        if chromosome[on_off_index] == 1:
+            active_rules.append(rule)
+        current_index += on_off_index
+    return active_rules
+
+
 def map_chromosome_to_trading_rule_parameters(chromosome: List[int], trading_rules: List[TradingRule]) -> List[List[int]]:
+    # Resulting list of parameters
     parameters = []
     # The currently considered index in the chromosome
     current_index = 0

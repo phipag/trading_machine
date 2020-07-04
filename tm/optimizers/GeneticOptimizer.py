@@ -6,7 +6,7 @@ from deap import base, tools, creator
 
 from tm import StockDataProvider
 from tm.optimizers.StrategyPerformanceEvaluator import StrategyPerformanceEvaluator
-from tm.optimizers.utils import map_chromosome_to_trading_rule_parameters
+from tm.optimizers.utils import map_chromosome_to_trading_rule_parameters, filter_for_active_rules
 from tm.trading_rules import TradingRule
 
 
@@ -45,10 +45,13 @@ class GeneticOptimizer:
         self.__toolbox.register('mutate', tools.mutFlipBit, indpb=0.05)
         self.__toolbox.register('select', tools.selTournament, tournsize=3)
 
+    # noinspection PyPep8Naming
     def __evaluateFitness(self, individual) -> Tuple[Union[int, Any]]:
-        rules = list(map(lambda Rule, params: Rule(self.__stock_data_provider, *params), self.__trading_rules, map_chromosome_to_trading_rule_parameters(individual, self.__trading_rules)))
-        # TODO: Ignore inactive rules
-        evaluator = StrategyPerformanceEvaluator(rules)
+        rule_instances = list(map(lambda Rule, params: Rule(self.__stock_data_provider, *params), self.__trading_rules, map_chromosome_to_trading_rule_parameters(individual, self.__trading_rules)))
+        active_rule_instances = filter_for_active_rules(individual, rule_instances)
+        if len(active_rule_instances) == 0:
+            return (0,)
+        evaluator = StrategyPerformanceEvaluator(active_rule_instances)
         return evaluator.calculate_net_profit(),
 
     def __calculate_chromosome_length(self) -> int:
