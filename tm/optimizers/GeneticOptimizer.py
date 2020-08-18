@@ -12,18 +12,9 @@ from tm.trading_rules import TradingRule
 
 # noinspection PyUnresolvedReferences
 class GeneticOptimizer:
-    __trading_rules: List[TradingRule]
-    __toolbox: base.Toolbox
-    __individual_size: int
-    __stock_data_provider: StockDataProvider
-
-    @property
-    def toolbox(self):
-        return self.__toolbox
-
     def __init__(self, stock_data_provider: StockDataProvider, trading_rules: List[TradingRule]):
-        self.__trading_rules = trading_rules
-        self.__stock_data_provider = stock_data_provider
+        self.__trading_rules: List[TradingRule] = trading_rules
+        self.__stock_data_provider: StockDataProvider = stock_data_provider
 
         # Create fitness maximization function and "Individual" Type with DEAP creator.
         creator.create('FitnessMax', base.Fitness, weights=(1.0,))
@@ -31,11 +22,11 @@ class GeneticOptimizer:
 
         # Register all functions to the DEAP toolbox.
         # Those specify the genetic components and will be called during the execution of the algorithm.
-        self.__toolbox = base.Toolbox()
+        self.__toolbox: base.Toolbox = base.Toolbox()
         # Creates a random bit in the form of an integer, either 1 or 0.
         self.__toolbox.register('random_bit', np.random.randint, low=0, high=2)
         # Generator for chromosomes (individuals)
-        self.__individual_size = self.__calculate_chromosome_length()
+        self.__individual_size: int = self.__calculate_chromosome_length()
         self.__toolbox.register('individual', tools.initRepeat, creator.Individual, self.__toolbox.random_bit, n=self.__individual_size)
         # Generates a population by calling the individual function on the toolbox.
         self.__toolbox.register('population', tools.initRepeat, list, self.__toolbox.individual)
@@ -44,6 +35,10 @@ class GeneticOptimizer:
         self.__toolbox.register('mate', tools.cxTwoPoint)
         self.__toolbox.register('mutate', tools.mutFlipBit, indpb=0.05)
         self.__toolbox.register('select', tools.selTournament, tournsize=3)
+
+    @property
+    def toolbox(self):
+        return self.__toolbox
 
     # noinspection PyPep8Naming
     def __evaluateFitness(self, individual) -> Tuple[Union[int, Any]]:

@@ -7,11 +7,10 @@ from tm import StockDataProvider
 
 
 class TradingRule(ABC):
-    _history: pd.DataFrame
     num_bits: List[int]
 
     def __init__(self, stock_data_provider: StockDataProvider):
-        self._history = stock_data_provider.history
+        self._history: pd.DataFrame = stock_data_provider.history
 
     @property
     def history(self):

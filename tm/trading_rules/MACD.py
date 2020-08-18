@@ -9,15 +9,12 @@ from tm.trading_rules.TradingRule import TradingRule
 class MACD(TradingRule):
     # The lowerEMA, higherEMA,signalEMA parameters each need 8 bits (= all integers in [0, 255])
     num_bits: List[int] = [24]
-    __lowerEMA: int
-    __higherEMA: int
-    __signalEMA: int
 
     def __init__(self, stock_data_provider: StockDataProvider, lowerEMA: int = 12, higherEMA: int = 26, signalEMA: int = 9):
         super().__init__(stock_data_provider)
-        self.__lowerEMA = lowerEMA
-        self.__higherEMA = higherEMA
-        self.__signalEMA = signalEMA
+        self.__lowerEMA: int = lowerEMA
+        self.__higherEMA: int = higherEMA
+        self.__signalEMA: int = signalEMA
 
     def calculate(self) -> pd.Series:
         """
@@ -64,7 +61,7 @@ class MACD(TradingRule):
         :return: Series containing sell or not sell indicators
         """
         # Sell if the MACD crosses the signal from below
-        ema12 = self._history['Close'].ewm(span=self.__lowerEMA , adjust=False).mean()
+        ema12 = self._history['Close'].ewm(span=self.__lowerEMA, adjust=False).mean()
         ema26 = self._history['Close'].ewm(span=self.__higherEMA, adjust=False).mean()
         macd = ema12 - ema26
         signal = macd.ewm(span=self.__signalEMA, adjust=False).mean()

@@ -12,10 +12,6 @@ class StrategyPerformanceEvaluator:
     A class which should calculate different performance metrics given a list of trading rule instances with initialized parameters.
     Please note that the trading rules hold the stock data as pandas Series in the property "TradingRule.history"
     """
-    __trading_rules: List[TradingRule]
-    __buy_signals: pd.Series
-    __sell_signals: pd.Series
-    __closing_prices: pd.Series
     TRANSACTION_COSTS: int = 0.0025
 
     def __init__(self, trading_rules: List[TradingRule]):
@@ -30,14 +26,14 @@ class StrategyPerformanceEvaluator:
                 if len(rule.history[rule.history['Close'] != base_history['Close']]) != 0:
                     raise ValueError('Please make sure that all trading rule instances hold the same market data.')
 
-        self.__trading_rules = trading_rules
+        self.__trading_rules: List[TradingRule] = trading_rules
         # Possible because all rules hold the same market data at this point
-        self.__closing_prices = trading_rules[0].history['Close']
+        self.__closing_prices: pd.Series = trading_rules[0].history['Close']
 
         # TODO: Improve this rule ("Buy and sell only if all rules say it")
         # Note: reduce function over bitwise and is faster than manual iteration
-        self.__buy_signals = pd.Series(data=reduce(operator.and_, map(lambda rule: rule.buy_signals(), self.__trading_rules)), index=self.__closing_prices.index)
-        self.__sell_signals = pd.Series(data=reduce(operator.and_, map(lambda rule: rule.sell_signals(), self.__trading_rules)), index=self.__closing_prices.index)
+        self.__buy_signals: pd.Series = pd.Series(data=reduce(operator.and_, map(lambda rule: rule.buy_signals(), self.__trading_rules)), index=self.__closing_prices.index)
+        self.__sell_signals: pd.Series = pd.Series(data=reduce(operator.and_, map(lambda rule: rule.sell_signals(), self.__trading_rules)), index=self.__closing_prices.index)
 
     def calculate_net_profit(self) -> float:
         # If nothing is bought, profit is 0

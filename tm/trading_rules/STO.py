@@ -8,11 +8,10 @@ from tm.trading_rules.TradingRule import TradingRule
 
 class STO(TradingRule):
     num_bits: List[int] = [8]
-    __days: int
 
     def __init__(self, stock_data_provider: StockDataProvider, days: int = 14):
         super().__init__(stock_data_provider)
-        self.__days = days
+        self.__days: int = days
         lowestArray = np.empty(self._history['Close'].size)
         highestArray = np.empty(self._history['Close'].size)
         lowestValue = self._history['Close'].iloc[0]

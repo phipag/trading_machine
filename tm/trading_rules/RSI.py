@@ -1,6 +1,8 @@
 from typing import List
+
 import pandas as pd
 from ta import momentum
+
 from tm import StockDataProvider
 from tm.trading_rules.TradingRule import TradingRule
 
@@ -9,14 +11,11 @@ class RSI(TradingRule):
     # The days parameters needs 8 bits (= all integers in [0, 255]),
     # the buyIndicator and sellIndicator each 7 bits [0,128]
     num_bits: List[int] = [22]
-    __days: int
-    __buyIndicator: int
-    __sellIndicator: int
 
     def __init__(self, stock_data_provider: StockDataProvider, days: int = 200, buyIndicator: int = 30, sellIndicator: int = 70):
         super().__init__(stock_data_provider)
-        self.__buyIndicator = buyIndicator
-        self.__sellIndicator = sellIndicator
+        self.__buyIndicator: int = buyIndicator
+        self.__sellIndicator: int = sellIndicator
 
     def calculate(self) -> pd.Series:
         """
