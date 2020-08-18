@@ -17,15 +17,15 @@ class GeometricBrownianMotion(MonteCarloSimulation):
         variance = log_returns.var()
         standard_deviation = log_returns.std()
 
-        drift = mean - (0.5 * variance)
-        daily_returns = np.exp(drift + standard_deviation * np.random.standard_normal(time_steps))
+        drift = mean - 0.5 * variance
+        gbm_multipliers: np.ndarray = np.exp(drift + standard_deviation * np.random.standard_normal(time_steps))
 
         start_price = self.__closing_prices.iloc[-1]
         gbm_stock_prices = np.zeros(time_steps)
         gbm_stock_prices[0] = start_price
 
         for i in range(1, time_steps):
-            gbm_stock_prices[i] = gbm_stock_prices[i - 1] * daily_returns[i]
+            gbm_stock_prices[i] = gbm_stock_prices[i - 1] * gbm_multipliers[i]
 
         return pd.Series(gbm_stock_prices, index=pd.date_range(self.__closing_prices.index[-1], periods=time_steps, freq='D'))
 
