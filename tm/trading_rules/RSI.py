@@ -10,12 +10,13 @@ from tm.trading_rules.TradingRule import TradingRule
 class RSI(TradingRule):
     # The days parameters needs 8 bits (= all integers in [0, 255]),
     # the buyIndicator and sellIndicator each 7 bits [0,128]
-    num_bits: List[int] = [22]
+    num_bits: List[int] = [8, 7, 7]
 
     def __init__(self, stock_data_provider: StockDataProvider, days: int = 200, buyIndicator: int = 30, sellIndicator: int = 70):
         super().__init__(stock_data_provider)
-        self.__buyIndicator: int = buyIndicator
-        self.__sellIndicator: int = sellIndicator
+        self.__days: int = days if days > 1 else 1
+        self.__buyIndicator: int = buyIndicator if (buyIndicator >= 0 and buyIndicator <= 100) else 30
+        self.__sellIndicator: int = sellIndicator if (sellIndicator >= 0 and sellIndicator <= 100) else 70
 
     def calculate(self) -> pd.Series:
         """

@@ -11,7 +11,7 @@ class STO(TradingRule):
 
     def __init__(self, stock_data_provider: StockDataProvider, days: int = 14):
         super().__init__(stock_data_provider)
-        self.__days: int = days
+        self.__days: int = days if days > 1 else 1
         lowestArray = np.empty(self._history['Close'].size)
         highestArray = np.empty(self._history['Close'].size)
         lowestValue = self._history['Close'].iloc[0]
