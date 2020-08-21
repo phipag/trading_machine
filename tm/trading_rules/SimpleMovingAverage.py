@@ -37,7 +37,7 @@ class SimpleMovingAverage(TradingRule):
         Construct a Series containing True if the stock should be sold and false else
         :return: Series containing sell or not sell indicators
         """
-        # Sell if the stock price crosses the SMA from below
+        # Sell if the stock price crosses the SMA from above
         sma = self.calculate()
         # A boolean vector
         sell_decisions = (self._history['Close'].shift(1) > sma) & (self._history['Close'] <= sma)
