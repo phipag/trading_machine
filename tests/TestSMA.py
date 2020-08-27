@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import math
-from mock import Mock
+from unittest.mock import Mock
 
 from tm import StockDataProvider
 from tm.trading_rules import SimpleMovingAverage
