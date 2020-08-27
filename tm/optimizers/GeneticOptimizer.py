@@ -1,8 +1,8 @@
-import random
+from functools import reduce
 from typing import List, Tuple, Union, Any
 
 import numpy as np
-from deap import base, tools, creator
+from deap import base, tools, creator, algorithms
 
 from tm import StockDataProvider
 from tm.optimizers.StrategyPerformanceEvaluator import StrategyPerformanceEvaluator
@@ -41,7 +41,7 @@ class GeneticOptimizer:
         return self.__toolbox
 
     # noinspection PyPep8Naming
-    def __evaluateFitness(self, individual) -> Tuple[Union[int, Any]]:
+    def __evaluateFitness(self, individual: List[int]) -> Tuple[Union[int, Any]]:
         rule_instances = list(map(lambda Rule, params: Rule(self.__stock_data_provider, *params), self.__trading_rules, map_chromosome_to_trading_rule_parameters(individual, self.__trading_rules)))
         active_rule_instances = filter_for_active_rules(individual, rule_instances)
         if len(active_rule_instances) == 0:
@@ -55,62 +55,20 @@ class GeneticOptimizer:
         :return: int
         """
         # Reserve one bit for each trading rule representing a turn on/off binary variable
-        total_length = len(self.__trading_rules)
-        for rule in self.__trading_rules:
-            total_length += sum(rule.num_bits)
+        num_on_off_bits = len(self.__trading_rules)
+        total_length = reduce(lambda accumulator, rule: accumulator + sum(rule.num_bits), self.__trading_rules, num_on_off_bits)
         return total_length
 
-    def run(self):
-        population = self.__toolbox.population(n=300)
-        # Evaluate the entire population
-        fitnesses = list(map(self.__toolbox.evaluate, population))
-        for individual, fitness in zip(population, fitnesses):
-            individual.fitness.values = fitness
+    def run(self, pop_size: int = 300, ngen: int = 15, cxpb: float = 0.5, mutpb: float = 0.2, hof_size: int = 5) -> tools.HallOfFame:
+        if not 0 <= cxpb <= 1 or not 0 <= mutpb <= 1:
+            raise ValueError('"cxpb" and "mutpb" parameters must be probabilities in the interval [0, 1]')
+        population = self.__toolbox.population(n=pop_size)
+        stats = tools.Statistics(lambda individual: individual.fitness.values)
+        stats.register('min', np.min)
+        stats.register('max', np.max)
+        stats.register('mean', np.mean)
+        stats.register('std', np.std)
+        hof = tools.HallOfFame(hof_size)
+        algorithms.eaSimple(population, self.__toolbox, cxpb=cxpb, mutpb=mutpb, ngen=ngen, stats=stats, halloffame=hof)
 
-        # CXPB is the probability with which two individuals are crossed.
-        # MUTPB is the probability for mutating an individual.
-        CXPB, MUTPB = 0.5, 0.2
-
-        # Begin the evolution
-        # Variable keeping track of the number of generations
-        g = 0
-        while g < 5:
-            # A new generation
-            g = g + 1
-            print("-- Generation %i --" % g)
-            # Select the next generation individuals
-            offspring = self.__toolbox.select(population, len(population))
-            # Clone the selected individuals
-            offspring = list(map(self.__toolbox.clone, offspring))
-
-            # Apply crossover and mutation on the offspring
-            for child1, child2 in zip(offspring[::2], offspring[1::2]):
-                if random.random() < CXPB:
-                    self.__toolbox.mate(child1, child2)
-                    del child1.fitness.values
-                    del child2.fitness.values
-            for mutant in offspring:
-                if random.random() < MUTPB:
-                    self.__toolbox.mutate(mutant)
-                    del mutant.fitness.values
-
-            # Evaluate the individuals with an invalid fitness
-            invalid_ind = [individual for individual in offspring if not individual.fitness.valid]
-            fitnesses = map(self.__toolbox.evaluate, invalid_ind)
-            for ind, fit in zip(invalid_ind, fitnesses):
-                ind.fitness.values = fit
-            # Replace the population with the offspring
-            population[:] = offspring
-
-            # Gather all the fitnesses in one list and print the stats
-            fitnesses = [individual.fitness.values[0] for individual in population]
-
-            length = len(population)
-            mean = sum(fitnesses) / length
-            sum2 = sum(x * x for x in fitnesses)
-            std = abs(sum2 / length - mean ** 2) ** 0.5
-
-            print("  Min %s" % min(fitnesses))
-            print("  Max %s" % max(fitnesses))
-            print("  Avg %s" % mean)
-            print("  Std %s" % std)
+        return hof
