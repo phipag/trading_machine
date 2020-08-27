@@ -7,13 +7,12 @@ from tm.trading_rules import TradingRule
 def filter_for_active_rules(chromosome: List[int], trading_rules: List[TradingRule]) -> List[TradingRule]:
     # Resulting list of active rules
     active_rules = []
-    # The currently considered index in the chromosome
-    current_index = 0
+    # The currently considered on_off_index in the chromosome
+    on_off_index = 0
     for rule in trading_rules:
-        on_off_index = current_index + sum(rule.num_bits)
+        on_off_index += sum(rule.num_bits)
         if chromosome[on_off_index] == 1:
             active_rules.append(rule)
-        current_index += on_off_index
     return active_rules
 
 
