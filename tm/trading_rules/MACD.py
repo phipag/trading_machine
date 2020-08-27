@@ -12,21 +12,27 @@ class MACD(TradingRule):
 
     def __init__(self, stock_data_provider: StockDataProvider, lowerEMA: int = 12, higherEMA: int = 26, signalEMA: int = 9):
         super().__init__(stock_data_provider)
-        if higherEMA >= 3: self.__higherEMA = higherEMA
-        elif lowerEMA >= 2: self.__higherEMA = lowerEMA + 1
-        elif signalEMA >= 1: self.__higherEMA = signalEMA + 2
-        else: self.__higherEMA = 3
+        if higherEMA >= 3:
+            self.__higherEMA = higherEMA
+        elif lowerEMA >= 2:
+            self.__higherEMA = lowerEMA + 1
+        elif signalEMA >= 1:
+            self.__higherEMA = signalEMA + 2
+        else:
+            self.__higherEMA = 3
 
-        if (lowerEMA < 2 or lowerEMA >= self.__higherEMA): self.__lowerEMA = self.__higherEMA - 1
-        else: self.__lowerEMA = lowerEMA
+        if (lowerEMA < 2 or lowerEMA >= self.__higherEMA):
+            self.__lowerEMA = self.__higherEMA - 1
+        else:
+            self.__lowerEMA = lowerEMA
 
-        if (signalEMA <1 or signalEMA >= self.__lowerEMA):  self.__signalEMA = self.__lowerEMA - 1
-        else: self.__signalEMA = signalEMA
+        if (signalEMA < 1 or signalEMA >= self.__lowerEMA):
+            self.__signalEMA = self.__lowerEMA - 1
+        else:
+            self.__signalEMA = signalEMA
 
     def calculate(self) -> pd.Series:
-        """
-        Not Implemented
-        """
+        raise NotImplementedError()
 
     def get_macd(self) -> pd.Series:
         """
