@@ -7,13 +7,12 @@ from tm.trading_rules import TradingRule
 def filter_for_active_rules(chromosome: List[int], trading_rules: List[TradingRule]) -> List[TradingRule]:
     # Resulting list of active rules
     active_rules = []
-    # The currently considered index in the chromosome
-    current_index = 0
+    # The currently considered on_off_index in the chromosome
+    on_off_index = 0
     for rule in trading_rules:
-        on_off_index = current_index + sum(rule.num_bits)
+        on_off_index += sum(rule.num_bits)
         if chromosome[on_off_index] == 1:
             active_rules.append(rule)
-        current_index += on_off_index
     return active_rules
 
 
@@ -35,7 +34,8 @@ def map_chromosome_to_trading_rule_parameters(chromosome: List[int], trading_rul
     return parameters
 
 
-def calculate_absolute_buy_and_hold_returns(stock_data_provider: StockDataProvider) -> float:
+def calculate_absolute_buy_and_hold_returns(stock_data_provider: StockDataProvider, transaction_costs: int = 0.0025) -> float:
     first_price = stock_data_provider.history['Close'].iloc[0]
     last_price = stock_data_provider.history['Close'].iloc[-1]
-    return last_price - first_price
+    transaction_costs = first_price * transaction_costs
+    return last_price - first_price - transaction_costs
