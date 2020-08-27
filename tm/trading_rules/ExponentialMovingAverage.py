@@ -10,23 +10,23 @@ class ExponentialMovingAverage(TradingRule):
     # The days parameter needs 8 bits (= all integers in [0, 255])
     num_bits: List[int] = [8]
 
-    def __init__(self, stock_data_provider: StockDataProvider, days: int = 200):
+    def __init__(self, stock_data_provider: StockDataProvider, weight: int = 0):
         super().__init__(stock_data_provider)
-        self.__days: int = days if days > 1 else 1
+        self.__com: int = weight/10
 
     def calculate(self) -> pd.Series:
         """
         Calculates the exponential moving average
         :return: Series containing the exponential moving average values for each closing price
         """
-        return self._history['Close'].ewm(span=self.__days, adjust=False).mean()
+        return self._history['Close'].ewm(com=self.__com, adjust=False).mean()
 
     def buy_signals(self) -> pd.Series:
         """
         Construct a Series containing True if the stock should be bought and false else
         :return: Series containing buy or not buy indicators
         """
-        # Buy if the stock price crosses the SMA from below
+        # Buy if the stock price crosses the EMA from below
         ema = self.calculate()
         # A boolean vector
         buy_decisions = (self._history['Close'].shift(1) < ema) & (self._history['Close'] >= ema)
@@ -37,7 +37,7 @@ class ExponentialMovingAverage(TradingRule):
         Construct a Series containing True if the stock should be sold and false else
         :return: Series containing sell or not sell indicators
         """
-        # Sell if the stock price crosses the SMA from below
+        # Sell if the stock price crosses the EMA from above
         ema = self.calculate()
         # A boolean vector
         sell_decisions = (self._history['Close'].shift(1) > ema) & (self._history['Close'] <= ema)
