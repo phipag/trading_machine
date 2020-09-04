@@ -5,6 +5,8 @@ from typing import List
 from tm import StockDataProvider
 from tm.trading_rules.TradingRule import TradingRule
 
+'''STochastic Oscillator'''
+
 
 class STO(TradingRule):
     num_bits: List[int] = [8]
