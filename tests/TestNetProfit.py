@@ -176,4 +176,4 @@ def test_net_profit9(mock_sma, monkeypatch):
     monkeypatch.setattr(SimpleMovingAverage, 'sell_signals', mock_sell_signals)
 
     evaluator = StrategyPerformanceEvaluator([mock_sma])
-    assert evaluator.calculate_net_profit() == 6.9326
+    assert evaluator.calculate_net_profit() == 6.9325
