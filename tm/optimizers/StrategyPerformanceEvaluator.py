@@ -76,7 +76,7 @@ class StrategyPerformanceEvaluator:
         # If the last signal is a buy signal, add a sell signal in the end
         last_sell_signal_date = self.__sell_signals[self.__sell_signals == True].index[-1]
         last_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[-1]
-        if last_sell_signal_date < last_buy_signal_date:
+        if last_sell_signal_date <= last_buy_signal_date:
             self.__sell_signals.iloc[-1] = True
 
         # Remove all sell signals before the first buy signal, because nothing can be sold before something has been bought
@@ -94,6 +94,7 @@ class StrategyPerformanceEvaluator:
         # Now we are ready to calculate profit: There is at least one buy and one sell signal, the first signal is always a buy signal and the last signal is always a sell signal
         # Simulate transaction costs
         transaction_costs = self.__closing_prices.loc[self.__buy_signals[self.__buy_signals == True].index].sum() * self.TRANSACTION_COSTS
+        transaction_costs += self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() * self.TRANSACTION_COSTS
         # Calculate net profit
         net_profit = self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() - self.__closing_prices.loc[self.__buy_signals[self.__buy_signals == True].index].sum()
 
