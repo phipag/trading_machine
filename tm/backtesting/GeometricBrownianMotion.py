@@ -33,6 +33,8 @@ class GeometricBrownianMotion(MonteCarloSimulation):
         simulations: List[pd.Series] = []
         for i in range(num_simulations):
             simulations.append(self.__fit_geometric_brownian_motion(time_steps))
+        # TODO: Set as property in the end so that instance result can be reused
+        #  and check that it can only be called if the result has already been calculated
         return pd.concat(simulations, axis=1)
 
     def __get_log_returns(self) -> pd.Series:

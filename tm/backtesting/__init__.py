@@ -1,1 +1,2 @@
+from tm.backtesting.FeedForwardCrossvalidation import FeedForwardCrossvalidation
 from tm.backtesting.GeometricBrownianMotion import GeometricBrownianMotion

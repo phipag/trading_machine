@@ -61,7 +61,7 @@ class GeneticOptimizer:
 
     def run(self, pop_size: int = 300, ngen: int = 15, cxpb: float = 0.5, mutpb: float = 0.2, hof_size: int = 5) -> tools.HallOfFame:
         if not 0 <= cxpb <= 1 or not 0 <= mutpb <= 1:
-            raise ValueError('"cxpb" and "mutpb" parameters must be probabilities in the interval [0, 1]')
+            raise ValueError('"cxpb" and "mutpb" parameters must be probabilities in the interval [0, 1].')
         population = self.__toolbox.population(n=pop_size)
         stats = tools.Statistics(lambda individual: individual.fitness.values)
         stats.register('min', np.min)

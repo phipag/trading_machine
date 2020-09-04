@@ -7,6 +7,7 @@ from tm import StockDataProvider
 from tm.trading_rules import SimpleMovingAverage
 from tm.trading_rules import ExponentialMovingAverage
 
+
 @pytest.fixture()
 def df():
     data = [['2015-01-02', 10], ['2015-01-03', 15], ['2015-01-04', 14], ['2015-01-05', 16], ['2015-01-06', 18],
@@ -15,6 +16,7 @@ def df():
     df['Date'] = pd.to_datetime(df['Date'])
     df = df.set_index(['Date'])
     return df
+
 
 @pytest.fixture()
 def mock_sdp(df):
@@ -94,6 +96,7 @@ def test_ema1(mock_sdp, df):
     assert ema0.calculate().iloc[7] == 9
     assert ema0.calculate().iloc[8] == 17
     assert ema0.calculate().iloc[9] == 19
+
 
 def test_ema2(mock_sdp, df):
     mock_sdp.history = df
