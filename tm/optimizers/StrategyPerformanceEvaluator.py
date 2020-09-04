@@ -144,4 +144,4 @@ class StrategyPerformanceEvaluator:
             # Return net profit - transaction costs
             return net_profit - transaction_costs
         else:
-            return
+            return 0.0
