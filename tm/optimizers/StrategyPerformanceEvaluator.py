@@ -117,8 +117,9 @@ class StrategyPerformanceEvaluator:
         # If the last signal is a sell signal, add a buy signal in the end
         last_sell_signal_date = self.__sell_signals[self.__sell_signals == True].index[-1]
         last_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[-1]
-        if last_sell_signal_date > last_buy_signal_date:
+        if last_sell_signal_date >= last_buy_signal_date:
             self.__buy_signals.iloc[-1] = True
+            self.__sell_signals.iloc[-1] = False
 
         # Remove all buy signals before the first sell signal, because nothing can be bought back before something has been sold
         while True:
