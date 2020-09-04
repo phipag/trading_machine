@@ -120,26 +120,27 @@ class StrategyPerformanceEvaluator:
         if last_sell_signal_date > last_buy_signal_date:
             self.__buy_signals.iloc[-1] = True
 
-        # If the first signal is a buy signal, remove it, because nothing can be bought before something has been sold (Short selling)
-        first_sell_signal_date = self.__sell_signals[self.__sell_signals == True].index[0]
-        first_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[0]
-        if first_sell_signal_date >= first_buy_signal_date:
-            self.__buy_signals[first_buy_signal_date] = False
+        # Remove all buy signals before the first sell signal, because nothing can be bought back before something has been sold
+        while True:
+            first_sell_signal_date = self.__sell_signals[self.__sell_signals == True].index[0]
+            first_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[0]
+            if first_buy_signal_date <= first_sell_signal_date:
+                self.__buy_signals.loc[first_buy_signal_date] = False
+            else:
+                break
 
-        # Now we are ready to calculate profit: There is at least one buy and one sell signal, the first signal is a sell signal and the last signal is a buy signal
-        # Attention: There might still be a mismatch between the number of sell signals and the number of buy signals
-        buy_sell_signals = pd.concat([self.__buy_signals[self.__buy_signals == True], self.__sell_signals[self.__sell_signals == True]], axis=1)
-        buy_sell_signals.columns = ['buy', 'sell']
-        buy_sell_signals = buy_sell_signals.loc[(buy_sell_signals['buy'].shift(1) != buy_sell_signals['buy']) & (buy_sell_signals['sell'].shift(1) != buy_sell_signals['sell'])]
+        # Make sure there are no consecutive buy or sell signals
+        self.__remove_consecutive_buy_or_sell_signals()
 
-        # Simulate transaction costs
-        transaction_costs = self.__closing_prices.loc[buy_sell_signals[buy_sell_signals['sell'] == True].index].sum() * self.TRANSACTION_COSTS
-        transaction_costs += self.__closing_prices.loc[buy_sell_signals[buy_sell_signals['buy'] == True].index].sum() * self.TRANSACTION_COSTS
-
-        # Calculate net profit
         if market_agreement:
-            net_profit_short = self.__closing_prices.loc[buy_sell_signals[buy_sell_signals['sell'] == True].index].sum() - self.__closing_prices.loc[
-                buy_sell_signals[buy_sell_signals['buy'] == True].index].sum()
+            # Now we are ready to calculate profit: There is at least one buy and one sell signal, the first signal is always a buy signal and the last signal is always a sell signal
+            # Simulate transaction costs
+            transaction_costs = self.__closing_prices.loc[self.__buy_signals[self.__buy_signals == True].index].sum() * self.TRANSACTION_COSTS
+            transaction_costs += self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() * self.TRANSACTION_COSTS
+            # Calculate net profit
+            net_profit = self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() - self.__closing_prices.loc[self.__buy_signals[self.__buy_signals == True].index].sum()
 
-        # Return net profit - transaction costs
-        return net_profit_short - transaction_costs
+            # Return net profit - transaction costs
+            return net_profit - transaction_costs
+        else:
+            return
