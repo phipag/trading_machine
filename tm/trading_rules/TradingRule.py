@@ -9,6 +9,7 @@ from tm import StockDataProvider
 class TradingRule(ABC):
     num_bits: List[int]
 
+    # TODO: Refactor because only StockDataProvider().history['Close'] is used by all trading rules
     def __init__(self, stock_data_provider: StockDataProvider):
         self._history: pd.DataFrame = stock_data_provider.history
 
