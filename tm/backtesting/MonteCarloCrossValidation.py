@@ -11,7 +11,7 @@ from tm.optimizers import StrategyPerformanceEvaluator, map_chromosome_to_tradin
 from tm.trading_rules import TradingRule
 
 
-class FeedForwardCrossvalidation:
+class MonteCarloCrossValidation:
     """
     A class used to run cross-validation on a given set of trading rules
     """
