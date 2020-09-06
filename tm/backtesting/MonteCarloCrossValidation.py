@@ -47,7 +47,6 @@ class MonteCarloCrossValidation:
         best_rule_index, max_mean_net_profit = 0, float('-inf')
         simulations_df = self.__monte_carlo_simulator.simulate(num_iterations, time_steps)
 
-        # TODO: Try out multiprocessing
         for index, individual in enumerate(self.__hof):
             # Collect net_profits on each monte carlo simulation to calculate the mean later
             net_profits: np.ndarray = np.array([])
