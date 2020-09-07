@@ -13,6 +13,8 @@ class StrategyPerformanceEvaluator:
     Please note that the trading rules hold the stock data as pandas Series in the property "TradingRule.history"
     """
     TRANSACTION_COSTS: int = 0.0025
+    LENDING_FEE: int = 0.003
+    ONE_TIME_COSTS: int = 0
 
     def __init__(self, trading_rules: List[TradingRule]):
         # Trading Rules should not be empty
@@ -104,9 +106,6 @@ class StrategyPerformanceEvaluator:
 
     def calculate_net_profit_short(self) -> float:
 
-        buyback_period = 30
-        market_agreement = True
-
         # If nothing is sold, profit is 0
         if len(self.__sell_signals[self.__sell_signals == True]) == 0:
             return 0.0
@@ -134,15 +133,15 @@ class StrategyPerformanceEvaluator:
         # Make sure there are no consecutive buy or sell signals
         self.__remove_consecutive_buy_or_sell_signals()
 
-        if market_agreement:
-            # Now we are ready to calculate profit: There is at least one buy and one sell signal, the first signal is always a buy signal and the last signal is always a sell signal
-            # Simulate transaction costs
-            transaction_costs = self.__closing_prices.loc[self.__buy_signals[self.__buy_signals == True].index].sum() * self.TRANSACTION_COSTS
-            transaction_costs += self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() * self.TRANSACTION_COSTS
-            # Calculate net profit
-            net_profit = self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() - self.__closing_prices.loc[self.__buy_signals[self.__buy_signals == True].index].sum()
+        # Now we are ready to calculate profit: There is at least one buy and one sell signal, the first signal is always a buy signal and the last signal is always a sell signal
+        # Simulate transaction costs
+        transaction_costs = self.__closing_prices.loc[self.__buy_signals[self.__buy_signals == True].index].sum() * self.TRANSACTION_COSTS
+        transaction_costs += self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() * self.TRANSACTION_COSTS
 
-            # Return net profit - transaction costs
-            return net_profit - transaction_costs
-        else:
-            return 0.0
+        lending_fee = ((self.__sell_signals[self.__sell_signals == True].index - self.__buy_signals[self.__buy_signals == True].index) * self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() * self.LENDING_FEE) / 360
+
+        # Calculate net profit
+        net_profit = self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() - self.__closing_prices.loc[self.__buy_signals[self.__buy_signals == True].index].sum()
+
+        # Return net profit - transaction costs
+        return net_profit - transaction_costs - lending_fee - self.ONE_TIME_COSTS
