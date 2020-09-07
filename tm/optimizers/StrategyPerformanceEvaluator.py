@@ -90,6 +90,9 @@ class StrategyPerformanceEvaluator:
                 self.__sell_signals.loc[first_sell_signal_date] = False
             else:
                 break
+        #Remove simultaneous buy and sell signals
+        self.__sell_signals[self.__sell_signals & self.__buy_signals] = False
+        self.__buy_signals[self.__sell_signals & self.__buy_signals] = False
 
         # Make sure there are no consecutive buy or sell signals
         self.__remove_consecutive_buy_or_sell_signals()

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -11,7 +11,7 @@ from tm.optimizers import StrategyPerformanceEvaluator, map_chromosome_to_tradin
 from tm.trading_rules import TradingRule
 
 
-class FeedForwardCrossvalidation:
+class MonteCarloCrossValidation:
     """
     A class used to run cross-validation on a given set of trading rules
     """
@@ -28,6 +28,14 @@ class FeedForwardCrossvalidation:
             raise ValueError('Please make sure that the hall of fame contains at least one individual.')
         self.__monte_carlo_simulator = monte_carlo_simulator
         self.__trading_rules = trading_rules
+        # Contains the best individual of the hall of fame after cross validation
+        self.__best_individual: Optional[List[int]] = None
+
+    @property
+    def best_individual(self):
+        if self.__best_individual is not None:
+            raise UserWarning('Cannot get the best individual before running the algorithm. Please make sure to call the \'run\' method calling this property.')
+        return self.__best_individual
 
     def run(self, num_iterations: int, time_steps: int) -> List[int]:
         """
@@ -39,7 +47,6 @@ class FeedForwardCrossvalidation:
         best_rule_index, max_mean_net_profit = 0, float('-inf')
         simulations_df = self.__monte_carlo_simulator.simulate(num_iterations, time_steps)
 
-        # TODO: Try out multiprocessing
         for index, individual in enumerate(self.__hof):
             # Collect net_profits on each monte carlo simulation to calculate the mean later
             net_profits: np.ndarray = np.array([])
@@ -63,7 +70,7 @@ class FeedForwardCrossvalidation:
             if mean_net_profit > max_mean_net_profit:
                 best_rule_index, max_mean_net_profit = index, mean_net_profit
 
-        # TODO: Set as property so that it can be retrieved after running from outside of the class
-        print('Best individual:', self.__hof[best_rule_index])
+        self.__best_individual = self.__hof[best_rule_index]
+        print('Best individual:', self.__best_individual)
         print('Best average net profit:', max_mean_net_profit)
-        return self.__hof[best_rule_index]
+        return self.__best_individual
