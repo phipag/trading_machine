@@ -55,12 +55,6 @@ class StrategyPerformanceEvaluator:
                 self.__buy_signals.iloc[i] = False
             elif sell_signals[i] == True and last_signal == 'sell':
                 self.__sell_signals.iloc[i] = False
-            # If the same signals occur at the same day remove the one which is identical to the last signal
-            if buy_signals[i] == True and sell_signals[i] == True:
-                if last_signal == 'buy':
-                    self.__buy_signals.iloc[i] = False
-                else:
-                    self.__sell_signals.iloc[i] = False
             if buy_signals[i] == True:
                 last_signal = 'buy'
             elif sell_signals[i] == True:
@@ -71,6 +65,10 @@ class StrategyPerformanceEvaluator:
         if len(self.__buy_signals[self.__buy_signals == True]) == 0:
             return 0.0
 
+        # Remove simultaneous buy and sell signals
+        self.__sell_signals[self.__sell_signals & self.__buy_signals] = False
+        self.__buy_signals[self.__sell_signals & self.__buy_signals] = False
+
         # If no sell signal is generated insert it manually in the end
         if len(self.__sell_signals[self.__sell_signals == True]) == 0:
             self.__sell_signals.iloc[-1] = True
@@ -80,19 +78,15 @@ class StrategyPerformanceEvaluator:
         last_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[-1]
         if last_sell_signal_date <= last_buy_signal_date:
             self.__sell_signals.iloc[-1] = True
-            self.__buy_signals.iloc[-1] = False
 
         # Remove all sell signals before the first buy signal, because nothing can be sold before something has been bought
-        while True:
+        while len(self.__sell_signals[self.__sell_signals == True]) > 0 and len(self.__buy_signals[self.__buy_signals == True]) > 0:
             first_sell_signal_date = self.__sell_signals[self.__sell_signals == True].index[0]
             first_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[0]
             if first_sell_signal_date <= first_buy_signal_date:
                 self.__sell_signals.loc[first_sell_signal_date] = False
             else:
                 break
-        #Remove simultaneous buy and sell signals
-        self.__sell_signals[self.__sell_signals & self.__buy_signals] = False
-        self.__buy_signals[self.__sell_signals & self.__buy_signals] = False
 
         # Make sure there are no consecutive buy or sell signals
         self.__remove_consecutive_buy_or_sell_signals()
@@ -141,7 +135,8 @@ class StrategyPerformanceEvaluator:
         transaction_costs = self.__closing_prices.loc[self.__buy_signals[self.__buy_signals == True].index].sum() * self.TRANSACTION_COSTS
         transaction_costs += self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() * self.TRANSACTION_COSTS
 
-        lending_fee = ((self.__sell_signals[self.__sell_signals == True].index - self.__buy_signals[self.__buy_signals == True].index) * self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() * self.LENDING_FEE) / 360
+        lending_fee = ((self.__sell_signals[self.__sell_signals == True].index - self.__buy_signals[self.__buy_signals == True].index) * self.__closing_prices.loc[
+            self.__sell_signals[self.__sell_signals == True].index].sum() * self.LENDING_FEE) / 360
 
         # Calculate net profit
         net_profit = self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() - self.__closing_prices.loc[self.__buy_signals[self.__buy_signals == True].index].sum()
