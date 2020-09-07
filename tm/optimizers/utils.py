@@ -38,4 +38,5 @@ def calculate_absolute_buy_and_hold_returns(stock_data_provider: StockDataProvid
     first_price = stock_data_provider.history['Close'].iloc[0]
     last_price = stock_data_provider.history['Close'].iloc[-1]
     transaction_costs = first_price * transaction_costs
+    transaction_costs += last_price * transaction_costs
     return last_price - first_price - transaction_costs
