@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -10,6 +10,14 @@ from tm.backtesting.MonteCarloSimulation import MonteCarloSimulation
 class GeometricBrownianMotion(MonteCarloSimulation):
     def __init__(self, data: StockDataProvider):
         self.__closing_prices: pd.Series = data.history['Close']
+        self.__simulations: Optional[pd.core.frame.DataFrame] = None
+
+    @property
+    def simulations(self):
+        if self.__simulations is None:
+            raise UserWarning(
+                'Cannot get the simulations before running the algorithm. Please make sure to call the \'simulate\' method before calling this property.')
+        return self.__simulations
 
     def __fit_geometric_brownian_motion(self, time_steps: int) -> pd.Series:
         log_returns = self.__get_log_returns()
@@ -33,9 +41,8 @@ class GeometricBrownianMotion(MonteCarloSimulation):
         simulations: List[pd.Series] = []
         for i in range(num_simulations):
             simulations.append(self.__fit_geometric_brownian_motion(time_steps))
-        # TODO: Set as property in the end so that instance result can be reused
-        #  and check that it can only be called if the result has already been calculated
-        return pd.concat(simulations, axis=1)
+        self.__simulations = pd.concat(simulations, axis=1)
+        return self.__simulations
 
     def __get_log_returns(self) -> pd.Series:
         return np.log(1 + self.__closing_prices.pct_change())
