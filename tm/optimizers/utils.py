@@ -34,9 +34,10 @@ def map_chromosome_to_trading_rule_parameters(chromosome: List[int], trading_rul
     return parameters
 
 
-def calculate_absolute_buy_and_hold_returns(stock_data_provider: StockDataProvider, transaction_costs: int = 0.0025) -> float:
+def calculate_absolute_buy_and_hold_returns(stock_data_provider: StockDataProvider, transaction_costs_percentage: int = 0.0025) -> float:
     first_price = stock_data_provider.history['Close'].iloc[0]
     last_price = stock_data_provider.history['Close'].iloc[-1]
-    transaction_costs = first_price * transaction_costs
-    transaction_costs += last_price * transaction_costs
+    transaction_costs = first_price * transaction_costs_percentage
+    transaction_costs += last_price * transaction_costs_percentage
+
     return last_price - first_price - transaction_costs
