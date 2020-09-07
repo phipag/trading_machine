@@ -33,7 +33,7 @@ class MonteCarloCrossValidation:
 
     @property
     def best_individual(self):
-        if self.__best_individual is not None:
+        if self.__best_individual is None:
             raise UserWarning('Cannot get the best individual before running the algorithm. Please make sure to call the \'run\' method calling this property.')
         return self.__best_individual
 
