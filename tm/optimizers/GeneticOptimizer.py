@@ -1,3 +1,4 @@
+import random
 from functools import reduce
 from typing import List, Tuple, Union, Any
 
@@ -17,6 +18,7 @@ class GeneticOptimizer:
         self.__stock_data_provider: StockDataProvider = stock_data_provider
 
         np.random.seed(42)
+        random.seed(42)
 
         # Create fitness maximization function and "Individual" Type with DEAP creator.
         creator.create('FitnessMax', base.Fitness, weights=(1.0,))
