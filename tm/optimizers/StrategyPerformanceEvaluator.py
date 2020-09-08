@@ -102,10 +102,13 @@ class StrategyPerformanceEvaluator:
         return net_profit - transaction_costs
 
     def calculate_net_profit_short(self) -> float:
-
         # If nothing is sold, profit is 0
         if len(self.__sell_signals[self.__sell_signals == True]) == 0:
             return 0.0
+
+        # Remove simultaneous buy and sell signals
+        self.__sell_signals[self.__sell_signals & self.__buy_signals] = False
+        self.__buy_signals[self.__sell_signals & self.__buy_signals] = False
 
         # If no buy signal is generated insert it manually in the end
         if len(self.__buy_signals[self.__buy_signals == True]) == 0:
@@ -116,10 +119,9 @@ class StrategyPerformanceEvaluator:
         last_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[-1]
         if last_sell_signal_date >= last_buy_signal_date:
             self.__buy_signals.iloc[-1] = True
-            self.__sell_signals.iloc[-1] = False
 
         # Remove all buy signals before the first sell signal, because nothing can be bought back before something has been sold
-        while True:
+        while len(self.__sell_signals[self.__sell_signals == True]) > 0 and len(self.__buy_signals[self.__buy_signals == True]) > 0:
             first_sell_signal_date = self.__sell_signals[self.__sell_signals == True].index[0]
             first_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[0]
             if first_buy_signal_date <= first_sell_signal_date:
@@ -135,7 +137,7 @@ class StrategyPerformanceEvaluator:
         transaction_costs = self.__closing_prices.loc[self.__buy_signals[self.__buy_signals == True].index].sum() * self.TRANSACTION_COSTS
         transaction_costs += self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() * self.TRANSACTION_COSTS
 
-        lending_fee = ((self.__sell_signals[self.__sell_signals == True].index - self.__buy_signals[self.__buy_signals == True].index) * self.__closing_prices.loc[
+        lending_fee = ((self.__buy_signals[self.__buy_signals == True].index - self.__sell_signals[self.__sell_signals == True].index) * self.__closing_prices.loc[
             self.__sell_signals[self.__sell_signals == True].index].sum() * self.LENDING_FEE) / 360
 
         # Calculate net profit
