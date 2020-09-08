@@ -16,6 +16,8 @@ class GeneticOptimizer:
         self.__trading_rules: List[TradingRule] = trading_rules
         self.__stock_data_provider: StockDataProvider = stock_data_provider
 
+        np.random.seed(42)
+
         # Create fitness maximization function and "Individual" Type with DEAP creator.
         creator.create('FitnessMax', base.Fitness, weights=(1.0,))
         creator.create('Individual', list, fitness=creator.FitnessMax)
