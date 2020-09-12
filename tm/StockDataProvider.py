@@ -13,7 +13,6 @@ class StockDataProvider:
             self.__actions: pd.DataFrame = ticker.actions
             self.__dividends: pd.Series = ticker.dividends
             self.__splits: pd.Series = ticker.splits
-            self.__info: pd.DataFrame = ticker.info
         except TypeError:
             raise ValueError('The provided ticker name "' + ticker_name + '" cannot be found.')
 
@@ -33,6 +32,3 @@ class StockDataProvider:
     def splits(self):
         return self.__splits
 
-    @property
-    def info(self):
-        return self.__info
