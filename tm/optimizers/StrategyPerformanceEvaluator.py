@@ -63,6 +63,7 @@ class StrategyPerformanceEvaluator:
     def calculate_net_profit(self) -> float:
         # If nothing is bought, profit is 0
         if len(self.__buy_signals[self.__buy_signals == True]) == 0:
+            self.__sell_signals[self.__sell_signals == True] = False
             return 0.0
 
         # Remove simultaneous buy and sell signals
