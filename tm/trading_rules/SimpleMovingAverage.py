@@ -8,7 +8,7 @@ from tm.trading_rules.TradingRule import TradingRule
 
 class SimpleMovingAverage(TradingRule):
     # The days parameters needs 6 bits (= all integers in [0, 63)
-    num_bits: List[int] = 6
+    num_bits: List[int] = [6]
 
     def __init__(self, stock_data_provider: StockDataProvider, days: int = 200):
         super().__init__(stock_data_provider)
