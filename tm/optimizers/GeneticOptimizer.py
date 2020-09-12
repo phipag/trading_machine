@@ -1,3 +1,4 @@
+import random
 from functools import reduce
 from typing import List, Tuple, Union, Any
 
@@ -12,9 +13,13 @@ from tm.trading_rules import TradingRule
 
 # noinspection PyUnresolvedReferences
 class GeneticOptimizer:
-    def __init__(self, stock_data_provider: StockDataProvider, trading_rules: List[TradingRule]):
+    def __init__(self, stock_data_provider: StockDataProvider, trading_rules: List[TradingRule], random_seed=1337):
         self.__trading_rules: List[TradingRule] = trading_rules
         self.__stock_data_provider: StockDataProvider = stock_data_provider
+
+        if random_seed is not None:
+            np.random.seed(random_seed)
+            random.seed(random_seed)
 
         # Create fitness maximization function and "Individual" Type with DEAP creator.
         creator.create('FitnessMax', base.Fitness, weights=(1.0,))
