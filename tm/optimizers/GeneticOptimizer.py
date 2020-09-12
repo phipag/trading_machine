@@ -1,4 +1,5 @@
 import random
+from functools import reduce
 from typing import List, Tuple, Union, Any
 
 import numpy as np
@@ -59,9 +60,8 @@ class GeneticOptimizer:
         :return: int
         """
         # Reserve one bit for each trading rule representing a turn on/off binary variable
-        total_length = len(self.__trading_rules)
-        for rule in self.__trading_rules:
-            total_length += sum(rule.num_bits)
+        num_on_off_bits = len(self.__trading_rules)
+        total_length = reduce(lambda accumulator, rule: accumulator + sum(rule.num_bits), self.__trading_rules, num_on_off_bits)
         return total_length
 
     def run(self, pop_size: int = 300, ngen: int = 15, cxpb: float = 0.5, mutpb: float = 0.2, hof_size: int = 5) -> tools.HallOfFame:
