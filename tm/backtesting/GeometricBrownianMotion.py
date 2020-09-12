@@ -10,7 +10,7 @@ from tm.backtesting.MonteCarloSimulation import MonteCarloSimulation
 class GeometricBrownianMotion(MonteCarloSimulation):
     def __init__(self, data: StockDataProvider):
         self.__closing_prices: pd.Series = data.history['Close']
-        self.__simulations: Optional[pd.core.frame.DataFrame] = None
+        self.__simulations: Optional[pd.DataFrame] = None
 
     @property
     def simulations(self):
