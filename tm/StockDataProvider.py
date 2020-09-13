@@ -3,7 +3,7 @@ import yfinance as yf
 
 
 class StockDataProvider:
-    def __init__(self, ticker_name: str, period='max', start=None, end=None):
+    def __init__(self, ticker_name: str, period='1d', start=None, end=None):
         if not ticker_name:
             raise ValueError('Please provider a ticker name.')
 
