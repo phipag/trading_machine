@@ -2,6 +2,7 @@ from typing import List
 
 from tm import StockDataProvider
 from tm.trading_rules import TradingRule
+from pandas import Timestamp
 
 
 def filter_for_active_rules(chromosome: List[int], trading_rules: List[TradingRule]) -> List[TradingRule]:
@@ -34,9 +35,12 @@ def map_chromosome_to_trading_rule_parameters(chromosome: List[int], trading_rul
     return parameters
 
 
-def calculate_absolute_buy_and_hold_returns(stock_data_provider: StockDataProvider, transaction_costs_percentage: int = 0.0025) -> float:
+def calculate_absolute_buy_and_hold_returns(stock_data_provider: StockDataProvider, transaction_costs_percentage: int = 0.0025, early_out: Timestamp = None) -> float:
+    if (early_out is not None):
+        last_price = stock_data_provider.history['Close'].loc[early_out]
+    else:
+        last_price = stock_data_provider.history['Close'].iloc[-1]
     first_price = stock_data_provider.history['Close'].iloc[0]
-    last_price = stock_data_provider.history['Close'].iloc[-1]
     transaction_costs = first_price * transaction_costs_percentage
     transaction_costs += last_price * transaction_costs_percentage
 

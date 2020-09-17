@@ -1,10 +1,11 @@
 import operator
 from functools import reduce
-from typing import List
+from typing import List, Tuple
 
 import pandas as pd
 
 from tm.trading_rules import TradingRule
+from pandas import Timestamp
 
 
 class StrategyPerformanceEvaluator:
@@ -60,7 +61,7 @@ class StrategyPerformanceEvaluator:
             elif sell_signals[i] == True:
                 last_signal = 'sell'
 
-    def calculate_net_profit(self) -> float:
+    def calculate_net_profit(self) -> Tuple[float, Timestamp]:
         # Remove simultaneous buy and sell signals
         self.__sell_signals[self.__sell_signals & self.__buy_signals] = False
         self.__buy_signals[self.__sell_signals & self.__buy_signals] = False
@@ -71,7 +72,15 @@ class StrategyPerformanceEvaluator:
         # If nothing is bought, profit is 0
         if len(self.__buy_signals[self.__buy_signals == True]) == 0:
             self.__sell_signals[self.__sell_signals == True] = False
-            return 0.0
+            return 0.0, None
+
+        # If nothing is sold, profit is 0, because trade is not considered
+        if len(self.__sell_signals[self.__sell_signals == True]) == 0:
+            self.__buy_signals[self.__buy_signals == True] = False
+            return 0.0, None
+
+        # Make sure there are no consecutive buy or sell signals
+        self.__remove_consecutive_buy_or_sell_signals()
 
         # Remove all sell signals before the first buy signal, because nothing can be sold before something has been bought
         while len(self.__sell_signals[self.__sell_signals == True]) > 0:
@@ -82,18 +91,14 @@ class StrategyPerformanceEvaluator:
             else:
                 break
 
-        # If no sell signal is left insert it manually in the end
-        if len(self.__sell_signals[self.__sell_signals == True]) == 0:
-            self.__sell_signals.iloc[-1] = True
-
-        # If the last signal is a buy signal, add a sell signal in the end
+        # Remove all buy signals after the last sell signal
         last_sell_signal_date = self.__sell_signals[self.__sell_signals == True].index[-1]
         last_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[-1]
         if last_sell_signal_date < last_buy_signal_date:
-            self.__sell_signals.iloc[-1] = True
-
-        # Make sure there are no consecutive buy or sell signals
-        self.__remove_consecutive_buy_or_sell_signals()
+            self.__buy_signals.loc[last_sell_signal_date::] = False
+            return_last_sell_signal_date = last_sell_signal_date
+        else:
+            return_last_sell_signal_date = None
 
         # Assert that the number of buy and sell signals is equal
         assert len(self.__sell_signals[self.__sell_signals == True]) == len(self.__buy_signals[self.__buy_signals == True]), 'The number of buy and sell signals is not equal.'
@@ -106,7 +111,7 @@ class StrategyPerformanceEvaluator:
         net_profit = self.__closing_prices.loc[self.__sell_signals[self.__sell_signals == True].index].sum() - self.__closing_prices.loc[self.__buy_signals[self.__buy_signals == True].index].sum()
 
         # Return net profit - transaction costs
-        return net_profit - transaction_costs
+        return net_profit - transaction_costs, return_last_sell_signal_date
 
     def calculate_net_profit_short(self) -> float:
         # If nothing is sold, profit is 0

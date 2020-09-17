@@ -4,6 +4,7 @@ from unittest.mock import patch
 from tm.optimizers import StrategyPerformanceEvaluator
 from tm import StockDataProvider
 import pandas as pd
+from pandas import Timestamp
 
 from tm.trading_rules import SimpleMovingAverage
 from tm.trading_rules import ExponentialMovingAverage
@@ -17,14 +18,6 @@ def df():
     df['Date'] = pd.to_datetime(df['Date'])
     df = df.set_index(['Date'])
     return df
-
-
-@pytest.fixture()
-def mock_ema(df):
-    mock_sdp = Mock(spec=StockDataProvider)
-    mock_sdp.history = df
-    ema = ExponentialMovingAverage(mock_sdp)
-    return ema
 
 
 @pytest.fixture()
@@ -48,7 +41,9 @@ def test_net_profit1(mock_sma, monkeypatch):
     monkeypatch.setattr(SimpleMovingAverage, 'sell_signals', mock_sell_signals)
 
     evaluator = StrategyPerformanceEvaluator([mock_sma])
-    assert evaluator.calculate_net_profit() == 0
+    net_profit, last_sell_signal = evaluator.calculate_net_profit()
+    assert net_profit == 0
+    assert last_sell_signal is None
 
 
 def test_net_profit2(mock_sma, monkeypatch):
@@ -64,7 +59,9 @@ def test_net_profit2(mock_sma, monkeypatch):
     monkeypatch.setattr(SimpleMovingAverage, 'sell_signals', mock_sell_signals)
 
     evaluator = StrategyPerformanceEvaluator([mock_sma])
-    assert evaluator.calculate_net_profit() == 0
+    net_profit, last_sell_signal = evaluator.calculate_net_profit()
+    assert net_profit == 0
+    assert last_sell_signal is None
 
 
 def test_net_profit3(mock_sma, monkeypatch):
@@ -80,11 +77,13 @@ def test_net_profit3(mock_sma, monkeypatch):
     monkeypatch.setattr(SimpleMovingAverage, 'sell_signals', mock_sell_signals)
 
     evaluator = StrategyPerformanceEvaluator([mock_sma])
-    assert evaluator.calculate_net_profit() == 7.93
+    net_profit, last_sell_signal = evaluator.calculate_net_profit()
+    assert net_profit == 7.93
+    assert last_sell_signal is None
 
 
 def test_net_profit4(mock_sma, monkeypatch):
-    # no sell signals -> added in the end
+    # no sell signals -> nothing is bought
     def mock_buy_signals(self):
         return list([True, False, False, False, False, False, False, False, False, False])
 
@@ -96,11 +95,13 @@ def test_net_profit4(mock_sma, monkeypatch):
     monkeypatch.setattr(SimpleMovingAverage, 'sell_signals', mock_sell_signals)
 
     evaluator = StrategyPerformanceEvaluator([mock_sma])
-    assert evaluator.calculate_net_profit() == 8.9275
+    net_profit, last_sell_signal = evaluator.calculate_net_profit()
+    assert net_profit == 0
+    assert last_sell_signal is None
 
 
 def test_net_profit5(mock_sma, monkeypatch):
-    # no sell signals -> added in the end + consecutive buy signals
+    # no sell signals -> nothing is bought
     def mock_buy_signals(self):
         return list([True, False, False, False, True, False, False, True, False, False])
 
@@ -112,7 +113,9 @@ def test_net_profit5(mock_sma, monkeypatch):
     monkeypatch.setattr(SimpleMovingAverage, 'sell_signals', mock_sell_signals)
 
     evaluator = StrategyPerformanceEvaluator([mock_sma])
-    assert evaluator.calculate_net_profit() == 8.9275
+    net_profit, last_sell_signal = evaluator.calculate_net_profit()
+    assert net_profit == 0
+    assert last_sell_signal is None
 
 
 def test_net_profit6(mock_sma, monkeypatch):
@@ -128,7 +131,9 @@ def test_net_profit6(mock_sma, monkeypatch):
     monkeypatch.setattr(SimpleMovingAverage, 'sell_signals', mock_sell_signals)
 
     evaluator = StrategyPerformanceEvaluator([mock_sma])
-    assert evaluator.calculate_net_profit() == -2.275
+    net_profit, last_sell_signal = evaluator.calculate_net_profit()
+    assert net_profit == -2.275
+    assert last_sell_signal is None
 
 
 def test_net_profit7(mock_sma, monkeypatch):
@@ -144,7 +149,9 @@ def test_net_profit7(mock_sma, monkeypatch):
     monkeypatch.setattr(SimpleMovingAverage, 'sell_signals', mock_sell_signals)
 
     evaluator = StrategyPerformanceEvaluator([mock_sma])
-    assert evaluator.calculate_net_profit() == -9.0675
+    net_profit, last_sell_signal = evaluator.calculate_net_profit()
+    assert net_profit == -9.0675
+    assert last_sell_signal is None
 
 
 def test_net_profit8(mock_sma, monkeypatch):
@@ -160,7 +167,9 @@ def test_net_profit8(mock_sma, monkeypatch):
     monkeypatch.setattr(SimpleMovingAverage, 'sell_signals', mock_sell_signals)
 
     evaluator = StrategyPerformanceEvaluator([mock_sma])
-    assert evaluator.calculate_net_profit() == 5.88
+    net_profit, last_sell_signal = evaluator.calculate_net_profit()
+    assert net_profit == 5.88
+    assert last_sell_signal is None
 
 
 def test_net_profit9(mock_sma, monkeypatch):
@@ -176,4 +185,25 @@ def test_net_profit9(mock_sma, monkeypatch):
     monkeypatch.setattr(SimpleMovingAverage, 'sell_signals', mock_sell_signals)
 
     evaluator = StrategyPerformanceEvaluator([mock_sma])
-    assert evaluator.calculate_net_profit() == 6.9325
+    net_profit, last_sell_signal = evaluator.calculate_net_profit()
+    assert net_profit == 6.9325
+    assert last_sell_signal is None
+
+
+def test_net_profit10(mock_sma, monkeypatch):
+    # buy signal after the last sell signal -> eliminate later buy signals
+    def mock_buy_signals(self):
+        return list([True, False, False, False, False, False, False, False, True, False])
+
+    monkeypatch.setattr(SimpleMovingAverage, 'buy_signals', mock_buy_signals)
+
+    def mock_sell_signals(self):
+        return list([False, False, False, False, True, False, False, False, False, False])
+
+    monkeypatch.setattr(SimpleMovingAverage, 'sell_signals', mock_sell_signals)
+
+    evaluator = StrategyPerformanceEvaluator([mock_sma])
+    net_profit, last_sell_signal = evaluator.calculate_net_profit()
+    assert net_profit == 7.93
+    assert last_sell_signal == Timestamp('2015-01-06')
+
