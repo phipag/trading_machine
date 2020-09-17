@@ -32,8 +32,7 @@ class ChandelierExit(TradingRule):
         return highestValue - atr * self.__multiplier
 
     def buy_signals(self) -> pd.Series:
-        raise ValueError('Not implemented')
-
+        return False
 
     def sell_signals(self) -> pd.Series:
         """
