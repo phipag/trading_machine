@@ -74,11 +74,6 @@ class StrategyPerformanceEvaluator:
             self.__sell_signals[self.__sell_signals == True] = False
             return 0.0, None
 
-        # If nothing is sold, profit is 0, because trade is not considered
-        if len(self.__sell_signals[self.__sell_signals == True]) == 0:
-            self.__buy_signals[self.__buy_signals == True] = False
-            return 0.0, None
-
         # Make sure there are no consecutive buy or sell signals
         self.__remove_consecutive_buy_or_sell_signals()
 
@@ -90,6 +85,11 @@ class StrategyPerformanceEvaluator:
                 self.__sell_signals.loc[first_sell_signal_date] = False
             else:
                 break
+
+        # If nothing is sold, profit is 0, because trade is not considered
+        if len(self.__sell_signals[self.__sell_signals == True]) == 0:
+            self.__buy_signals[self.__buy_signals == True] = False
+            return 0.0, None
 
         # Remove all buy signals after the last sell signal
         last_sell_signal_date = self.__sell_signals[self.__sell_signals == True].index[-1]

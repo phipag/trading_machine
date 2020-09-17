@@ -63,7 +63,7 @@ class MonteCarloCrossValidation:
 
                 # Uses the StrategyPerformanceEvaluator to calculate the net profit
                 evaluator = StrategyPerformanceEvaluator(active_rule_instances)
-                net_profit = evaluator.calculate_net_profit()
+                net_profit, last_sell_signal = evaluator.calculate_net_profit()
                 net_profits = np.append(net_profits, net_profit)
 
             mean_net_profit = np.mean(net_profits)
