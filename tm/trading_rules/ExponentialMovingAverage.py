@@ -12,7 +12,7 @@ class ExponentialMovingAverage(TradingRule):
 
     def __init__(self, stock_data_provider: StockDataProvider, weight: int = 0):
         super().__init__(stock_data_provider)
-        self.__com: int = weight/10
+        self.__com: float = weight / 10
 
     def calculate(self) -> pd.Series:
         """
