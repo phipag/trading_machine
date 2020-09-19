@@ -78,13 +78,9 @@ class StrategyPerformanceEvaluator:
         self.__remove_consecutive_buy_or_sell_signals()
 
         # Remove all sell signals before the first buy signal, because nothing can be sold before something has been bought
-        while len(self.__sell_signals[self.__sell_signals == True]) > 0:
-            first_sell_signal_date = self.__sell_signals[self.__sell_signals == True].index[0]
+        if len(self.__sell_signals[self.__sell_signals == True]) > 0:
             first_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[0]
-            if first_sell_signal_date < first_buy_signal_date:
-                self.__sell_signals.loc[first_sell_signal_date] = False
-            else:
-                break
+            self.__sell_signals.loc[:first_buy_signal_date] = False
 
         # If nothing is sold, profit is 0, because trade is not considered
         if len(self.__sell_signals[self.__sell_signals == True]) == 0:
@@ -94,11 +90,10 @@ class StrategyPerformanceEvaluator:
         # Remove all buy signals after the last sell signal
         last_sell_signal_date = self.__sell_signals[self.__sell_signals == True].index[-1]
         last_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[-1]
+        return_last_sell_signal_date = None
         if last_sell_signal_date < last_buy_signal_date:
             self.__buy_signals.loc[last_sell_signal_date:] = False
             return_last_sell_signal_date = last_sell_signal_date
-        else:
-            return_last_sell_signal_date = None
 
         # Assert that the number of buy and sell signals is equal
         assert len(self.__sell_signals[self.__sell_signals == True]) == len(self.__buy_signals[self.__buy_signals == True]), 'The number of buy and sell signals is not equal.'

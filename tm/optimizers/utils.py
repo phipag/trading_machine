@@ -3,10 +3,9 @@ from typing import List
 from pandas import Timestamp
 
 from tm import StockDataProvider
+from tm.trading_rules import BollingerBaender
 from tm.trading_rules import ChandelierExit
 from tm.trading_rules import TradingRule
-from tm.trading_rules import BollingerBaender
-from pandas import Timestamp
 
 
 def filter_for_active_rules(chromosome: List[int], trading_rules: List[TradingRule]) -> List[TradingRule]:
@@ -16,6 +15,7 @@ def filter_for_active_rules(chromosome: List[int], trading_rules: List[TradingRu
     on_off_index = 0
     for rule in trading_rules:
         on_off_index += sum(rule.num_bits)
+        # TODO: Hardcoded instance check is dirty and should be solved via an abstract StopLoss class for production usage
         if chromosome[on_off_index] == 1 or isinstance(rule, ChandelierExit) or isinstance(rule, BollingerBaender):
             active_rules.append(rule)
     return active_rules
