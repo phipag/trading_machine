@@ -3,6 +3,7 @@ from typing import List
 from tm import StockDataProvider
 from tm.trading_rules import TradingRule
 from tm.trading_rules import ChandelierExit
+from tm.trading_rules import BollingerBaender
 from pandas import Timestamp
 
 
@@ -13,7 +14,7 @@ def filter_for_active_rules(chromosome: List[int], trading_rules: List[TradingRu
     on_off_index = 0
     for rule in trading_rules:
         on_off_index += sum(rule.num_bits)
-        if chromosome[on_off_index] == 1 or isinstance(rule, ChandelierExit):
+        if chromosome[on_off_index] == 1 or isinstance(rule, ChandelierExit) or isinstance(rule, BollingerBaender):
             active_rules.append(rule)
     return active_rules
 
