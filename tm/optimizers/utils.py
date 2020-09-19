@@ -37,7 +37,7 @@ def map_chromosome_to_trading_rule_parameters(chromosome: List[int], trading_rul
 
 
 def calculate_absolute_buy_and_hold_returns(stock_data_provider: StockDataProvider, transaction_costs_percentage: int = 0.0025, early_out: Timestamp = None) -> float:
-    if (early_out is not None):
+    if early_out is not None:
         last_price = stock_data_provider.history['Close'].loc[early_out]
     else:
         last_price = stock_data_provider.history['Close'].iloc[-1]

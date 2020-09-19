@@ -52,7 +52,7 @@ class GeneticOptimizer:
         if len(active_rule_instances) == 0:
             return (0,)
         evaluator = StrategyPerformanceEvaluator(active_rule_instances)
-        net_profit, last_sell_signal = evaluator.calculate_net_profit()
+        net_profit, _ = evaluator.calculate_net_profit()
         return net_profit,
 
     def __calculate_chromosome_length(self) -> int:

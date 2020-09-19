@@ -1,6 +1,6 @@
 import operator
 from functools import reduce
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import pandas as pd
 
@@ -61,7 +61,7 @@ class StrategyPerformanceEvaluator:
             elif sell_signals[i] == True:
                 last_signal = 'sell'
 
-    def calculate_net_profit(self) -> Tuple[float, Timestamp]:
+    def calculate_net_profit(self) -> Tuple[float, Optional[Timestamp]]:
         # Remove simultaneous buy and sell signals
         self.__sell_signals[self.__sell_signals & self.__buy_signals] = False
         self.__buy_signals[self.__sell_signals & self.__buy_signals] = False
