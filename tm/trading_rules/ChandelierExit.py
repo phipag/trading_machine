@@ -21,7 +21,7 @@ class ChandelierExit(TradingRule):
         Calculates the Chandelier exit
         :return: Series containing the Chandelier exit values for each closing price
         """
-        highestValue = pd.rolling_max(self._history['Close'], window=self.__days)
+        highest_value = self._history['Close'].rolling(window=self.__days).max()
         # TODO: optimization possible with Current ATR = ((Prior ATR x 13) + Current TR) / 14
         data = self._history.copy()
         data['tr0'] = abs(self._history['High'] - self._history['Low'])
@@ -29,10 +29,10 @@ class ChandelierExit(TradingRule):
         data['tr2'] = abs(self._history['Low'] - self._history['Close'].shift())
         tr = data[['tr0', 'tr1', 'tr2']].max(axis=1)
         atr = tr.ewm(alpha=1 / self.__days, min_periods=self.__days, adjust=False).mean()
-        return highestValue - atr * self.__multiplier
+        return highest_value - atr * self.__multiplier
 
     def buy_signals(self) -> pd.Series:
-        return False
+        return pd.Series(data=False, index=self._history.index)
 
     def sell_signals(self) -> pd.Series:
         """

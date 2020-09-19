@@ -3,9 +3,9 @@ from functools import reduce
 from typing import List, Tuple, Optional
 
 import pandas as pd
+from pandas import Timestamp
 
 from tm.trading_rules import TradingRule
-from pandas import Timestamp
 
 
 class StrategyPerformanceEvaluator:
@@ -95,7 +95,7 @@ class StrategyPerformanceEvaluator:
         last_sell_signal_date = self.__sell_signals[self.__sell_signals == True].index[-1]
         last_buy_signal_date = self.__buy_signals[self.__buy_signals == True].index[-1]
         if last_sell_signal_date < last_buy_signal_date:
-            self.__buy_signals.loc[last_sell_signal_date::] = False
+            self.__buy_signals.loc[last_sell_signal_date:] = False
             return_last_sell_signal_date = last_sell_signal_date
         else:
             return_last_sell_signal_date = None

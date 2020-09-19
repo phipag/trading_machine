@@ -1,8 +1,10 @@
 from typing import List
 
+from pandas import Timestamp
+
 from tm import StockDataProvider
-from tm.trading_rules import TradingRule
 from tm.trading_rules import ChandelierExit
+from tm.trading_rules import TradingRule
 from tm.trading_rules import BollingerBaender
 from pandas import Timestamp
 
@@ -31,8 +33,9 @@ def map_chromosome_to_trading_rule_parameters(chromosome: List[int], trading_rul
             # Convert bit_values to integer
             int_value = int(''.join(map(str, bit_values)), 2)
             rule_parameters.append(int_value)
-            # bits + 1 because the last bit represents the turn on/off binary variable for the trading rule
-            current_index += bits + 1
+            current_index += bits
+        # Add one bit for each rule because this is the on_off_index in the chromosome
+        current_index += 1
         parameters.append(rule_parameters)
     return parameters
 
