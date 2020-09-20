@@ -10,16 +10,16 @@ class ExponentialMovingAverage(TradingRule):
     # The days parameter needs 8 bits (= all integers in [0, 255])
     num_bits: List[int] = [8]
 
-    def __init__(self, stock_data_provider: StockDataProvider, weight: int = 0):
+    def __init__(self, stock_data_provider: StockDataProvider, days: int = 12):
         super().__init__(stock_data_provider)
-        self.__com: float = weight / 10
+        self.__days: float = days
 
     def calculate(self) -> pd.Series:
         """
         Calculates the exponential moving average
         :return: Series containing the exponential moving average values for each closing price
         """
-        return self._history['Close'].ewm(com=self.__com, adjust=False).mean()
+        return self._history['Close'].ewm(span=self.__days, adjust=False).mean()
 
     def buy_signals(self) -> pd.Series:
         """
