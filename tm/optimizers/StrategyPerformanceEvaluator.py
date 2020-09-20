@@ -5,7 +5,7 @@ from typing import List, Tuple, Optional
 import pandas as pd
 from pandas import Timestamp
 
-from tm.trading_rules import TradingRule
+from tm.trading_rules import TradingRule, BollingerBaender
 
 
 class StrategyPerformanceEvaluator:
@@ -33,10 +33,16 @@ class StrategyPerformanceEvaluator:
         # Possible because all rules hold the same market data at this point
         self.__closing_prices: pd.Series = trading_rules[0].history['Close']
 
-        # Buy or sell if at least one rule indicates it
+        # Buy if at least one rule indicates it
+        # Sell if all rules indicate it or if the BollingerBaender rule indicates it
         # Note: reduce function over bitwise and is faster than manual iteration
         self.__buy_signals: pd.Series = pd.Series(data=reduce(operator.or_, map(lambda rule: rule.buy_signals(), self.__trading_rules)), index=self.__closing_prices.index)
-        self.__sell_signals: pd.Series = pd.Series(data=reduce(operator.or_, map(lambda rule: rule.sell_signals(), self.__trading_rules)), index=self.__closing_prices.index)
+        self.__sell_signals: pd.Series = pd.Series(data=reduce(operator.and_, map(lambda rule: rule.sell_signals(), self.__trading_rules)), index=self.__closing_prices.index)
+        # TODO: Hardcoding is not good
+        # Find sell signals of BollingerBaender and merge them into sell signals of the rules
+        bb: Optional[BollingerBaender] = next((rule for rule in self.__trading_rules if isinstance(rule, List)), None)
+        if bb is not None:
+            self.__sell_signals[bb.sell_signals()] = True
 
     @property
     def buy_signals(self) -> pd.Series:
