@@ -42,10 +42,10 @@ class RSI(TradingRule):
         Construct a Series containing True if the stock should be bought and false else
         :return: Series containing buy or not buy indicators
         """
-        # Buy if the rsi is smaller than 30
+        # Buy if the rsi crosses the buy indicator line from below
         rsi = self.calculate()
         # A boolean vector
-        buy_decisions = (rsi <= self.__buyIndicator)
+        buy_decisions = (rsi.shift(1) <= self.__buyIndicator) & (rsi > self.__buyIndicator)
         return pd.Series(data=buy_decisions, index=self._history.index)
 
     def sell_signals(self) -> pd.Series:
@@ -53,8 +53,8 @@ class RSI(TradingRule):
         Construct a Series containing True if the stock should be sold and false else
         :return: Series containing sell or not sell indicators
         """
-        # Sell if the rsi is higher than 70
+        # Buy if the rsi crosses the sell indicator line from below
         rsi = self.calculate()
         # A boolean vector
-        sell_decisions = (rsi >= self.__sellIndicator)
+        sell_decisions = (rsi.shift(1) >= self.__buyIndicator) & (rsi < self.__buyIndicator)
         return pd.Series(data=sell_decisions, index=self._history.index)
