@@ -53,8 +53,8 @@ class RSI(TradingRule):
         Construct a Series containing True if the stock should be sold and false else
         :return: Series containing sell or not sell indicators
         """
-        # Buy if the rsi crosses the sell indicator line from below
+        # Buy if the rsi crosses the sell indicator line from above
         rsi = self.calculate()
         # A boolean vector
-        sell_decisions = (rsi.shift(1) >= self.__buyIndicator) & (rsi < self.__buyIndicator)
+        sell_decisions = (rsi.shift(1) >= self.__sellIndicator) & (rsi < self.__sellIndicator)
         return pd.Series(data=sell_decisions, index=self._history.index)
