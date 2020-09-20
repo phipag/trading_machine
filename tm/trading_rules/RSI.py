@@ -23,10 +23,10 @@ class RSI(TradingRule):
         Calculates the simple moving average
         :return: Series containing the simple moving average values for each closing price
         """
-        return momentum.rsi(self._history['Close'])
+        return momentum.rsi(self._history['Close'], self.__days)
 
         """
-        Alternative:
+        #Alternative:
         rsi_period = 14
         chg = self._history['Close'].diff(1)
         gain = chg.mask(chg < 0, 0)
