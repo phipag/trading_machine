@@ -9,16 +9,18 @@ from tm.trading_rules.TradingRule import TradingRule
 
 
 class STO(TradingRule):
-    num_bits: List[int] = [8]
+    # The days_kline and days_dline parameters each need 8 bits (= all integers in [0, 127])
+    num_bits: List[int] = [8,8]
 
-    def __init__(self, stock_data_provider: StockDataProvider, days: int = 14):
+    def __init__(self, stock_data_provider: StockDataProvider, days_kline: int = 14, days_dline: int = 3):
         super().__init__(stock_data_provider)
-        self.__days: int = days if days > 1 else 1
+        self.__days_kline: int = days_kline if days_kline > 1 else 1
+        self.__days_dline: int = days_dline if days_dline > 1 else 1
         lowestValue = self._history['Close'].iloc[0]
         highestValue = self._history['Close'].iloc[0]
-        lowestArray = self._history['Close'].rolling(window=self.__days).min()
-        highestArray = self._history['Close'].rolling(window=self.__days).max()
-        for i in range(0, self.__days):
+        lowestArray = self._history['Close'].rolling(window=self.__days_kline).min()
+        highestArray = self._history['Close'].rolling(window=self.__days_kline).max()
+        for i in range(0, self.__days_kline):
             if self._history['Close'].iloc[i] < lowestValue:
                 lowestValue = self._history['Close'].iloc[i]
             if self._history['Close'].iloc[i] > highestValue:
@@ -42,7 +44,7 @@ class STO(TradingRule):
         :return: Series containing the rate of change values for each closing price
         """
         kLine = self.calculate()
-        return kLine.rolling(window=self.__days).mean()
+        return kLine.rolling(window=self.__days_dline).mean()
 
     def buy_signals(self) -> pd.Series:
         """
