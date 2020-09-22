@@ -10,7 +10,7 @@ from tm.trading_rules.TradingRule import TradingRule
 
 class STO(TradingRule):
     # The days_kline and days_dline parameters each need 8 bits (= all integers in [0, 127])
-    num_bits: List[int] = [8,8]
+    num_bits: List[int] = [8, 8]
 
     def __init__(self, stock_data_provider: StockDataProvider, days_kline: int = 14, days_dline: int = 3):
         super().__init__(stock_data_provider)
@@ -20,7 +20,7 @@ class STO(TradingRule):
         highestValue = self._history['Close'].iloc[0]
         lowestArray = self._history['Close'].rolling(window=self.__days_kline).min()
         highestArray = self._history['Close'].rolling(window=self.__days_kline).max()
-        for i in range(0, self.__days_kline):
+        for i in range(0, max(self.__days_kline, self._history['Close'].size)):
             if self._history['Close'].iloc[i] < lowestValue:
                 lowestValue = self._history['Close'].iloc[i]
             if self._history['Close'].iloc[i] > highestValue:
