@@ -27,7 +27,7 @@ class BollingerBaender(TradingRule):
         return sma - std * self.__multiplier
 
     def buy_signals(self) -> pd.Series:
-        return False
+        return pd.Series(data=False, index=self._history.index)
 
     def sell_signals(self) -> pd.Series:
         """
