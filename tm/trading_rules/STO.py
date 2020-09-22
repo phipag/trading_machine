@@ -1,7 +1,7 @@
-import pandas as pd
-import numpy as np
-
 from typing import List
+
+import pandas as pd
+
 from tm import StockDataProvider
 from tm.trading_rules.TradingRule import TradingRule
 
@@ -20,7 +20,7 @@ class STO(TradingRule):
         highestValue = self._history['Close'].iloc[0]
         lowestArray = self._history['Close'].rolling(window=self.__days_kline).min()
         highestArray = self._history['Close'].rolling(window=self.__days_kline).max()
-        for i in range(0, max(self.__days_kline, self._history['Close'].size)):
+        for i in range(0, min(self.__days_kline, self._history['Close'].size)):
             if self._history['Close'].iloc[i] < lowestValue:
                 lowestValue = self._history['Close'].iloc[i]
             if self._history['Close'].iloc[i] > highestValue:
