@@ -30,12 +30,20 @@ class MonteCarloCrossValidation:
         self.__trading_rules = trading_rules
         # Contains the best individual of the hall of fame after cross validation
         self.__best_individual: Optional[List[int]] = None
+        # Contains average net profit of best individual after cross validation
+        self.__max_mean_net_profit: Optional[float] = None
 
     @property
     def best_individual(self):
         if self.__best_individual is None:
             raise UserWarning('Cannot get the best individual before running the algorithm. Please make sure to call the \'run\' method calling this property.')
         return self.__best_individual
+
+    @property
+    def max_mean_net_profit(self):
+        if self.__max_mean_net_profit is None:
+            raise UserWarning('Cannot get the maximum net profit before running the algorithm. Please make sure to call the \'run\' method calling this property.')
+        return self.__max_mean_net_profit
 
     def run(self, num_iterations: int, time_steps: int) -> List[int]:
         """
@@ -71,6 +79,7 @@ class MonteCarloCrossValidation:
                 best_rule_index, max_mean_net_profit = index, mean_net_profit
 
         self.__best_individual = self.__hof[best_rule_index]
+        self.__max_mean_net_profit = max_mean_net_profit
         print('Best individual:', self.__best_individual)
-        print('Best average net profit:', max_mean_net_profit)
+        print('Best average net profit:', self.__max_mean_net_profit)
         return self.__best_individual
